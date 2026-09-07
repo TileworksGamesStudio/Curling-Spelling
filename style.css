@@ -66,6 +66,7 @@ html, body {
   overflow: hidden;
   background-color: var(--bg-rink);
   color: var(--ink-900);
+  text-shadow: 0.35px 0 #000000, -0.35px 0 #000000, 0 0.35px #000000, 0 -0.35px #000000;
   font-family: var(--font-ui);
   user-select: none;
   -webkit-user-select: none;
@@ -452,6 +453,17 @@ html, body {
 
 .btn-utility:hover {
   background: var(--white);
+}
+
+.btn-home {
+  grid-column: 1 / -1;
+  color: var(--ice-900);
+  background: var(--ice-100);
+  text-decoration: none;
+}
+
+.btn-home:hover {
+  background: var(--ice-200);
 }
 
 .btn-utility .btn-icon {

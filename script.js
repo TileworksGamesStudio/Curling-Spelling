@@ -108,6 +108,106 @@ const PUZZLE_DATA = [
       "STORE", "STORES", "STORED", "TORSO", "TORSOS", "TORTE", "TORTES", 
       "TORE"
     ]
+  },
+  {
+    id: "puzzle_08", name: "Puzzle #8", centerLetter: "R", outerLetters: ["A", "E", "I", "N", "S", "T"], pangrams: ["RETAINS"],
+    validWords: ["RETAINS", "TRAINER", "STRAIN", "RETRAIN", "RATERS", "RAINS", "RAISE", "RATES", "REINS", "REST", "STAR", "STARE", "TEARS", "TIER", "TIRE"]
+  },
+  {
+    id: "puzzle_09", name: "Puzzle #9", centerLetter: "S", outerLetters: ["A", "E", "I", "L", "N", "T"], pangrams: ["SALIENT"],
+    validWords: ["SALIENT", "SILENT", "LISTEN", "ENLIST", "TINSEL", "SLATE", "STALE", "STEAL", "LEAST", "SAIL", "SALE", "SEAT", "SENT", "SINE", "SITE", "TAILS", "TILES", "NAILS", "LINES"]
+  },
+  {
+    id: "puzzle_10", name: "Puzzle #10", centerLetter: "T", outerLetters: ["A", "E", "I", "L", "N", "R"], pangrams: ["RATLINE"],
+    validWords: ["RATLINE", "LATTER", "LITTER", "LITTLE", "RATTLE", "RETINA", "RETAIN", "RETAIL", "TREAT", "TRAIL", "TRAIN", "TRIAL", "TILER", "TITLE", "TINE", "TIRE", "RATE", "LATE", "LINE", "TALL"]
+  },
+  {
+    id: "puzzle_11", name: "Puzzle #11", centerLetter: "D", outerLetters: ["A", "E", "I", "L", "N", "R"], pangrams: [],
+    validWords: ["DRAINED", "DIALER", "DENIAL", "NAILED", "RAILED", "RAIDER", "DEAR", "DARE", "DIAL", "DINE", "DIRE", "IDEAL", "LADEN", "LAND", "RIDE", "RIND", "DRAIN"]
+  },
+  {
+    id: "puzzle_12", name: "Puzzle #12", centerLetter: "L", outerLetters: ["A", "E", "I", "N", "O", "R"], pangrams: ["ORALINE"],
+    validWords: ["ORALINE", "LINEAR", "LONER", "LOAN", "LEAN", "LIAR", "LION", "LONE", "LORE", "NAIL", "NEAR", "NOIL", "ORAL", "RAIL", "REAL", "ROIL", "ROLE", "ROLL"]
+  },
+  {
+    id: "puzzle_13", name: "Puzzle #13", centerLetter: "M", outerLetters: ["A", "E", "I", "N", "O", "T"], pangrams: [],
+    validWords: ["MOMENT", "MOTION", "MOTIVE", "MINIMA", "ANIME", "AMINO", "ATOM", "MATE", "MEAN", "MEAT", "MINE", "MINT", "MOAN", "MOAT", "MOON", "TIME", "TOME"]
+  },
+  {
+    id: "puzzle_14", name: "Puzzle #14", centerLetter: "B", outerLetters: ["A", "E", "I", "L", "N", "R"], pangrams: [],
+    validWords: ["BRAILLE", "BRAINER", "BARREL", "BANNER", "BARON", "BAIL", "BALE", "BARE", "BEAN", "BEAR", "BEER", "BILE", "BINE", "BIRD", "BORE", "BORN", "BRAID", "BRINE", "BRIAR"]
+  },
+  {
+    id: "puzzle_15", name: "Puzzle #15", centerLetter: "C", outerLetters: ["A", "E", "I", "L", "N", "R"], pangrams: [],
+    validWords: ["CRANIAL", "CIRCLE", "CLEAN", "CLEAR", "CLERIC", "CLINE", "CRANE", "CRIER", "CABLE", "CANE", "CARE", "CASE", "CELL", "CEREAL", "CIDER", "CIRCA", "CLEANER"]
+  },
+  {
+    id: "puzzle_16", name: "Puzzle #16", centerLetter: "H", outerLetters: ["A", "E", "I", "L", "R", "T"], pangrams: [],
+    validWords: ["HEART", "HEATER", "HEIR", "HEIST", "HAIL", "HAIR", "HALE", "HALTER", "HARE", "HATE", "HEAL", "HEAR", "HEAT", "HILL", "HIRE", "HIT", "LATH", "LATHER", "THEIR", "THRILL"]
+  },
+  {
+    id: "puzzle_17", name: "Puzzle #17", centerLetter: "K", outerLetters: ["A", "E", "I", "N", "O", "R"], pangrams: [],
+    validWords: ["KRAKEN", "KARATE", "KENO", "KERN", "KIER", "KIND", "KING", "KINK", "KNEE", "KNOB", "KNOT", "KOREA", "KOREAN", "KRONA", "RAKE", "RANK", "ROKE", "OKRA"]
+  },
+  {
+    id: "puzzle_18", name: "Puzzle #18", centerLetter: "W", outerLetters: ["A", "E", "I", "N", "O", "R"], pangrams: [],
+    validWords: ["WORRIER", "WORSE", "WORN", "WORE", "WREN", "WIRE", "WINE", "WING", "WINER", "WARN", "WARE", "WANE", "WAIN", "WEAR", "WEIR", "WIER", "ROWE", "WROW"]
+  },
+  {
+    id: "puzzle_19", name: "Puzzle #19", centerLetter: "F", outerLetters: ["A", "E", "I", "L", "N", "R"], pangrams: [],
+    validWords: ["FINER", "FINAL", "FINALE", "FINIAL", "FIRER", "FIRE", "FIFE", "FILL", "FILER", "FLAIR", "FLARE", "FLEA", "FLEE", "FLIER", "FRAIL", "FRAME", "FREE", "FREER", "FRILL", "FRIAR"]
+  },
+  {
+    id: "puzzle_20", name: "Puzzle #20", centerLetter: "V", outerLetters: ["A", "E", "I", "N", "O", "R"], pangrams: [],
+    validWords: ["VINE", "VINER", "VINO", "VAN", "VANE", "VEIN", "VEINER", "VENA", "VERA", "VIA", "VIAL", "VIE", "VIRAL", "VIREO", "VIVID", "OVEN", "OVEN", "RIVEN"]
+  },
+  {
+    id: "puzzle_21", name: "Puzzle #21", centerLetter: "J", outerLetters: ["A", "E", "I", "N", "O", "R"], pangrams: [],
+    validWords: ["JAR", "JINX", "JIN", "JIVE", "JIVER", "JOIN", "JOINT", "JOKE", "JOKER", "JOUR", "RAJA", "JADE", "JANE", "JINN", "JINNI"]
+  },
+  {
+    id: "puzzle_22", name: "Puzzle #22", centerLetter: "Y", outerLetters: ["A", "E", "I", "L", "N", "R"], pangrams: [],
+    validWords: ["YEAR", "YEARN", "YELP", "YELL", "YETI", "YIELD", "YIP", "YOKE", "YORE", "YARN", "YAWN", "YAWNER", "LYRE", "LYING", "LAYER", "EARLY", "RELY"]
+  },
+  {
+    id: "puzzle_23", name: "Puzzle #23", centerLetter: "X", outerLetters: ["A", "E", "I", "O", "R", "T"], pangrams: [],
+    validWords: ["EXTRA", "EXERT", "EXILE", "EXIST", "EXIT", "OXIDE", "OXTER", "AXE", "AXIAL", "AXIOM", "TAXI", "TAXER", "TEXT", "TRIX", "XEROX", "XEROS", "XENIA", "XERIC"]
+  },
+  {
+    id: "puzzle_24", name: "Puzzle #24", centerLetter: "Z", outerLetters: ["A", "E", "I", "L", "N", "O"], pangrams: [],
+    validWords: ["ZONE", "ZONAL", "ZONING", "ZINE", "ZING", "ZINGER", "ZERO", "ZEBRA", "ZILCH", "ZILLION", "ZINNIA", "ZOE", "ZOO", "ZOON", "LAZE", "LAZING", "AMAZE", "AZALEA", "AZOIC"]
+  },
+  {
+    id: "puzzle_25", name: "Puzzle #25", centerLetter: "R", outerLetters: ["A", "B", "E", "I", "O", "T"], pangrams: [],
+    validWords: ["BARITONE", "BARB", "BARE", "BARET", "BARTER", "BITE", "BORE", "BORER", "BRAT", "BRIBE", "ORBIT", "ORBITER", "RABBI", "RARE", "RATE", "RATIO", "RIB", "RITE", "ROAR", "ROBE", "ROTATE"]
+  },
+  {
+    id: "puzzle_26", name: "Puzzle #26", centerLetter: "T", outerLetters: ["A", "E", "I", "O", "R", "S"], pangrams: ["TOASTER"],
+    validWords: ["TOASTER", "TASTER", "TASTE", "TREAT", "TOAST", "TOTAL", "TORT", "TORTE", "TORUS", "TORE", "TIRE", "TIER", "TRIOS", "TROTS", "ROAST", "ROSTER", "ROTATE", "STATE", "START"]
+  },
+  {
+    id: "puzzle_27", name: "Puzzle #27", centerLetter: "N", outerLetters: ["A", "E", "I", "O", "R", "S"], pangrams: [],
+    validWords: ["REASON", "SENIOR", "ARISEN", "RAISIN", "SNORES", "SNARE", "SNEER", "SINE", "SIREN", "NOISE", "NORIA", "NINE", "NONE", "NOON", "NOUN", "NEAR", "NORSE", "ONION"]
+  },
+  {
+    id: "puzzle_28", name: "Puzzle #28", centerLetter: "G", outerLetters: ["A", "E", "I", "L", "N", "R"], pangrams: [],
+    validWords: ["REGAL", "REGALIA", "REGAIN", "REGNAL", "GRAIN", "GRAIL", "GRILL", "GLEAN", "GLARE", "GLIER", "GIRL", "GINGER", "GLEN", "GLEANER", "RANGE", "RANGER", "ANGER", "ALIGN", "ALIEN"]
+  },
+  {
+    id: "puzzle_29", name: "Puzzle #29", centerLetter: "D", outerLetters: ["A", "E", "I", "N", "O", "R"], pangrams: [],
+    validWords: ["ORDAIN", "RADIO", "RADON", "RIDER", "DREAD", "DRAIN", "DRONE", "DINER", "DINED", "DOER", "DONE", "DIRE", "DINE", "ODDER", "UNDER", "ENDOR", "ADORN"]
+  },
+  {
+    id: "puzzle_30", name: "Puzzle #30", centerLetter: "P", outerLetters: ["A", "E", "I", "L", "N", "R"], pangrams: ["PLAINER"],
+    validWords: ["PLAINER", "PLAIN", "PLANER", "PANEL", "PAPER", "PARE", "PEAR", "PEAL", "PEEL", "PINE", "PIPE", "PIPER", "PLIER", "PRIER", "PAIR", "PAIL", "PAIN", "PENILE"]
+  },
+  {
+    id: "puzzle_31", name: "Puzzle #31", centerLetter: "E", outerLetters: ["A", "I", "L", "N", "R", "S"], pangrams: ["NAILERS"],
+    validWords: ["NAILERS", "NAILER", "LINEAR", "SALIEN", "SERIAL", "RENAL", "REINS", "RAISE", "RAISER", "REAL", "REEL", "REIN", "SEAL", "SEAR", "SEINE", "SERE", "SINE", "SIRE", "EARN", "EASE"]
+  },
+  {
+    id: "puzzle_32", name: "Puzzle #32", centerLetter: "I", outerLetters: ["A", "E", "L", "N", "O", "T"], pangrams: ["ISOLATE"],
+    validWords: ["ISOLATE", "ISLET", "ITALIAN", "INLET", "INTONE", "ION", "IRON", "IRATE", "ITEM", "LINE", "LION", "LOIN", "NAIL", "NATION", "NOTION", "TAIL", "TILE", "TOIL"]
   }
 ];
 
@@ -268,6 +368,8 @@ const sounds = new SoundEngine();
 const STORAGE_KEY_PROGRESS = "spelling_bee_progress_v3";
 const STORAGE_KEY_STATS = "spelling_bee_stats_v3";
 const STORAGE_KEY_SOUND = "spelling_bee_sound_v3";
+const STORAGE_KEY_SCHEDULE = "spelling_bee_schedule_v4";
+const ANCHOR_EPOCH = new Date(2026, 8, 7).getTime();
 
 class StorageManager {
   static getProgress() {
@@ -311,6 +413,20 @@ class StorageManager {
   static getPuzzleState(puzzleId) {
     const all = this.getProgress();
     return all[puzzleId] || { foundWords: [], score: 0, completed: false };
+  }
+
+  static getSchedule() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY_SCHEDULE)) || { assignments: {}, lastIndex: -1 };
+    } catch (e) {
+      return { assignments: {}, lastIndex: -1 };
+    }
+  }
+
+  static saveSchedule(schedule) {
+    try {
+      localStorage.setItem(STORAGE_KEY_SCHEDULE, JSON.stringify(schedule));
+    } catch (e) {}
   }
 
   static saveWord(puzzleId, word, points, maxScore, isPangram, effectiveDate) {
@@ -360,6 +476,7 @@ class StorageManager {
   static resetAll() {
     localStorage.removeItem(STORAGE_KEY_PROGRESS);
     localStorage.removeItem(STORAGE_KEY_STATS);
+    localStorage.removeItem(STORAGE_KEY_SCHEDULE);
   }
 }
 
@@ -397,14 +514,22 @@ class SpellingBeeGame {
   }
 
   preparePuzzles(rawList) {
+    const puzzleIds = new Set();
     return rawList.map((item, index) => {
+      if (!item.id || puzzleIds.has(item.id)) {
+        throw new Error(`Invalid or duplicate puzzle id at position ${index + 1}`);
+      }
+      puzzleIds.add(item.id);
       const center = item.centerLetter.toUpperCase();
       const outers = item.outerLetters.map(l => l.toUpperCase());
       const allowedLetters = new Set([center, ...outers]);
 
-      const validWords = item.validWords.filter(w => {
-        const clean = w.toUpperCase();
-        if (clean.length < 4 || !clean.includes(center)) return false;
+      if (allowedLetters.size !== 7 || allowedLetters.has(center) && outers.includes(center)) {
+        throw new Error(`Puzzle ${item.id} must define seven unique letters with one center letter`);
+      }
+
+      const validWords = [...new Set(item.validWords.map(w => String(w).toUpperCase()))].filter(clean => {
+        if (!/^[A-Z]+$/.test(clean) || clean.length < 4 || !clean.includes(center)) return false;
         for (const ch of clean) {
           if (!allowedLetters.has(ch)) return false;
         }
@@ -435,10 +560,51 @@ class SpellingBeeGame {
 
   getDailyPuzzle() {
     const today = new Date();
-    const epoch = new Date(2024, 0, 1).getTime();
-    const dayDiff = Math.floor((today.getTime() - epoch) / 86400000);
-    const cycleIndex = Math.abs(dayDiff) % this.puzzles.length;
-    return this.puzzles[cycleIndex];
+    const todayKey = this.getTodayDateString();
+    const epoch = new Date(ANCHOR_EPOCH);
+    const dayDiff = Math.max(0, Math.floor((new Date(todayKey) - epoch) / 86400000));
+    const schedule = StorageManager.getSchedule();
+    let previousIndex = Number.isInteger(schedule.lastIndex) ? schedule.lastIndex : -1;
+
+    for (let offset = 0; offset <= dayDiff; offset++) {
+      const date = new Date(epoch);
+      date.setDate(date.getDate() + offset);
+      const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+      if (!Number.isInteger(schedule.assignments[dateKey])) {
+        previousIndex = (previousIndex + 1) % this.puzzles.length;
+        schedule.assignments[dateKey] = previousIndex;
+      } else {
+        previousIndex = schedule.assignments[dateKey];
+      }
+    }
+
+    schedule.lastIndex = previousIndex;
+    StorageManager.saveSchedule(schedule);
+    return this.getPuzzleInstance(this.puzzles[schedule.assignments[todayKey] || 0], todayKey, dayDiff + 1);
+  }
+
+  getPuzzleInstance(puzzle, dateKey, releaseNumber) {
+    return { ...puzzle, assignedDate: dateKey, releaseNumber, instanceId: `${puzzle.id}_${dateKey}` };
+  }
+
+  getReleasedPuzzleIds() {
+    this.getDailyPuzzle();
+    const todayKey = this.getTodayDateString();
+    const schedule = StorageManager.getSchedule();
+    return new Set(Object.entries(schedule.assignments)
+      .filter(([date]) => date < todayKey)
+      .map(([, index]) => this.puzzles[index]?.id)
+      .filter(Boolean));
+  }
+
+  getReleasedPuzzleInstances() {
+    this.getDailyPuzzle();
+    const todayKey = this.getTodayDateString();
+    const schedule = StorageManager.getSchedule();
+    return Object.entries(schedule.assignments)
+      .filter(([date]) => date < todayKey)
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([date, index]) => this.getPuzzleInstance(this.puzzles[index], date, 0));
   }
 
   initDOM() {
@@ -675,14 +841,14 @@ class SpellingBeeGame {
 
   refreshMenuAndVault() {
     const daily = this.getDailyPuzzle();
-    const state = StorageManager.getPuzzleState(daily.id);
+    const state = StorageManager.getPuzzleState(daily.instanceId);
     const rank = this.getRankForScore(state.score, daily.maxScore);
 
     this.dailyStatusText.textContent = state.score > 0
       ? `${state.score} PTS — ${rank.name}`
       : "Play today's puzzle";
 
-    this.vaultBadgeText.textContent = `${this.puzzles.length} Available`;
+    this.vaultBadgeText.textContent = `${this.getReleasedPuzzleInstances().length} Available`;
   }
 
   loadPuzzle(puzzle, source = "daily") {
@@ -690,7 +856,7 @@ class SpellingBeeGame {
     this.activePuzzleSource = source;
     this.currentInput = "";
     this.shuffledOuter = [...puzzle.outerLetters];
-    this.cachedState = StorageManager.getPuzzleState(puzzle.id);
+    this.cachedState = StorageManager.getPuzzleState(puzzle.instanceId || puzzle.id);
 
     this.gamePuzzleBadge.textContent = source === "daily" ? "TODAY'S PUZZLE" : "ARCHIVE";
     this.gamePuzzleName.textContent = puzzle.name;
@@ -795,7 +961,7 @@ class SpellingBeeGame {
     sounds.playSuccess(isPangram);
 
     this.cachedState = StorageManager.saveWord(
-      this.activePuzzle.id,
+      this.activePuzzle.instanceId || this.activePuzzle.id,
       word,
       earnedPoints,
       this.activePuzzle.maxScore,
@@ -876,8 +1042,8 @@ class SpellingBeeGame {
   renderVault() {
     this.vaultListContainer.innerHTML = "";
 
-    this.puzzles.forEach(puzzle => {
-      const state = StorageManager.getPuzzleState(puzzle.id);
+    this.getReleasedPuzzleInstances().forEach(puzzle => {
+      const state = StorageManager.getPuzzleState(puzzle.instanceId);
       const card = document.createElement("div");
       card.className = "vault-puzzle-card";
       if (state.completed) card.classList.add("completed");
@@ -942,7 +1108,7 @@ class SpellingBeeGame {
   handleShareScore() {
     sounds.playTap();
     const puzzle = this.activePuzzle || this.getDailyPuzzle();
-    const state = StorageManager.getPuzzleState(puzzle.id);
+    const state = StorageManager.getPuzzleState(puzzle.instanceId || puzzle.id);
     const rank = this.getRankForScore(state.score, puzzle.maxScore);
 
     const shareText = `SPELLING BEE — ${puzzle.name}\n` +
