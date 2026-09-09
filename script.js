@@ -1,1148 +1,1253 @@
-const PUZZLE_DATA = [
-  {
-    id: "puzzle_01",
-    name: "Puzzle #1",
-    centerLetter: "P",
-    outerLetters: ["E", "G", "I", "N", "S", "W"],
-    pangrams: ["SWEEPING"],
-    validWords: [
-      "SWEEPING", "SWEEP", "SWEEPS", "PING", "PINGS", "PIPE", "PIPES", 
-      "PIPING", "PEEP", "PEEPS", "SPIN", "SPINS", "SPINE", "SPINES", 
-      "SPINNING", "SNIP", "SNIPS", "SNIPE", "SNIPES", "SNIPPING", "WEEP", 
-      "WEEPS", "WEEPING", "WIPE", "WIPES", "WIPING", "WISP", "WISPS", 
-      "SEEP", "SEEPS", "SEEPING", "SPEW", "SPEWS", "PIGS", "PIGPEN", 
-      "PIGPENS", "PEEN", "PEENS", "PENS", "PENNING", "PINING", "PINES", 
-      "PINE", "PEPPING", "PEWS"
-    ]
-  },
-  {
-    id: "puzzle_02",
-    name: "Puzzle #2",
-    centerLetter: "C",
-    outerLetters: ["D", "E", "L", "R", "S", "U"],
-    pangrams: ["CURDLES"],
-    validWords: [
-      "CURDLES", "CURDLE", "CURL", "CURLS", "CURLED", "CLUE", "CLUES", 
-      "CLUED", "CRUDE", "CRUDES", "CRUDER", "CRUEL", "CRUELS", "CURE", 
-      "CURES", "CURED", "CURER", "CURERS", "CURSE", "CURSES", "CURSED", 
-      "CURSER", "CURSERS", "SCULL", "SCULLS", "SCULLED", "CREED", "CREEDS", 
-      "ULCER", "ULCERS", "CELLED", "RECUR", "RECURS", "RECURRED", "CEDE", 
-      "CEDES", "CEDED", "SUCCEED", "SUCCEEDED", "SUCCEEDS", "SCUD", "SCUDS", 
-      "CURD", "CURDS", "REDUCE", "REDUCES", "REDUCED", "DEDUCE", "DEDUCES", 
-      "DEDUCED", "RECLUSE", "RECLUSES", "LUCRE", "LUCRES"
-    ]
-  },
-  {
-    id: "puzzle_03",
-    name: "Puzzle #3",
-    centerLetter: "G",
-    outerLetters: ["E", "H", "I", "L", "N", "O"],
-    pangrams: ["HOGLINE"],
-    validWords: [
-      "HOGLINE", "GOING", "GOINGS", "GIGGLE", "GIGGLES", "GIGGLING", "GLEN", 
-      "GLENS", "GONG", "GONGS", "GONGING", "GILL", "GILLS", "GLEE", "GOOGLE", 
-      "GOOGLES", "GOOGLING", "LEGION", "LEGIONS", "LIEGE", "LIEGES", "LOGE", 
-      "LOGES", "LOGIN", "LOGINS", "LOGGING", "LONGE", "LONGES", "NIGGLE", 
-      "NIGGLES", "NIGGLING", "OGLE", "OGLES", "OGLING", "EGGING", "INGLE", 
-      "INGLES", "LING", "LINGS", "LINGO", "ENGINE", "ENGINES", "HINGE", 
-      "HINGES", "HIGH", "HONING", "HOEING", "GELID", "LONG", "LONGS"
-    ]
-  },
-  {
-    id: "puzzle_04",
-    name: "Puzzle #4",
-    centerLetter: "O",
-    outerLetters: ["B", "D", "E", "N", "T", "U"],
-    pangrams: ["BUTTONED"],
-    validWords: [
-      "BUTTONED", "BUTTON", "BONED", "BONE", "BONBON", "BOON", "BOUT", 
-      "BOUND", "BOUNDED", "BOUNDEN", "DOUBT", "DOUBTED", "DOTE", "DOTED", 
-      "NOTE", "NOTED", "NOON", "NODE", "ONTO", "OUTDO", "OUTDONE", "TONED", 
-      "TONE", "TOUT", "TOUTED", "BENTO", "BODE", "BODED", "TENON", "DONE", 
-      "BOOT", "BOOTED", "NONET", "DONEE", "OUTBOUND"
-    ]
-  },
-  {
-    id: "puzzle_05",
-    name: "Puzzle #5",
-    centerLetter: "E",
-    outerLetters: ["D", "I", "L", "R", "V", "Y"],
-    pangrams: ["DELIVERY"],
-    validWords: [
-      "DELIVERY", "DELIVER", "DELIVERED", "DERIVE", "DERIVED", "EERIE", 
-      "ELDER", "EVER", "EVERY", "IDLE", "IDLED", "IDLER", "LEER", "LEERY", 
-      "LEVEL", "LEVELED", "LEVELER", "LEVER", "LEVERED", "LIVERY", "REED", 
-      "REEDY", "REEL", "REELED", "RELIED", "RELIEVE", "RELIEVED", "RIDE", 
-      "RIDER", "RIVE", "RIVER", "VEER", "VEERED", "VEIL", "VEILED", "YIELD", 
-      "YIELDED", "YIELDER", "LIVE", "LIVED", "LIVER", "DEVIL", "DIVE", 
-      "DIVER", "EDDY"
-    ]
-  },
-  {
-    id: "puzzle_06",
-    name: "Puzzle #6",
-    centerLetter: "A",
-    outerLetters: ["E", "G", "I", "N", "R", "T"],
-    pangrams: ["GRANITE", "TEARING", "INTEGRATE"],
-    validWords: [
-      "GRANITE", "TEARING", "INTEGRATE", "AGATE", "AGENT", "ANGER", "ANTE", 
-      "ATTAIN", "EARRING", "GAIN", "GAINER", "GARNET", "GIANT", "GRAIN", 
-      "GRATE", "GREAT", "INGRATE", "RATING", "REAGENT", "REGAIN", "RETAIN", 
-      "TARGET", "TRAIN", "TRAINEE", "RANT", "RANG", "TANG", "NEAR", "EARN", 
-      "EARNING", "GATE"
-    ]
-  },
-  {
-    id: "puzzle_07",
-    name: "Puzzle #7",
-    centerLetter: "O",
-    outerLetters: ["D", "E", "F", "R", "S", "T"],
-    pangrams: ["FROSTED", "DEFROST", "DEFROSTS"],
-    validWords: [
-      "FROSTED", "DEFROST", "DEFROSTS", "FROST", "FROSTS", "FOSTER", 
-      "FOSTERS", "FORTE", "FORTES", "FORT", "FORTS", "FOOT", "FOOTS", 
-      "FOOTED", "DOOR", "DOORS", "DOSE", "DOSES", "DOSED", "DOTE", 
-      "DOTES", "DOTED", "FORE", "RODE", "ROOF", "ROOFS", "ROOFED", 
-      "ROOT", "ROOTS", "ROOTED", "ROSE", "ROSES", "ROTE", "SOFT", 
-      "SOFTER", "SOOT", "SORE", "SORES", "SORT", "SORTS", "SORTED", 
-      "STORE", "STORES", "STORED", "TORSO", "TORSOS", "TORTE", "TORTES", 
-      "TORE"
-    ]
-  },
-  {
-    id: "puzzle_08", name: "Puzzle #8", centerLetter: "R", outerLetters: ["A", "E", "I", "N", "S", "T"], pangrams: ["RETAINS"],
-    validWords: ["RETAINS", "TRAINER", "STRAIN", "RETRAIN", "RATERS", "RAINS", "RAISE", "RATES", "REINS", "REST", "STAR", "STARE", "TEARS", "TIER", "TIRE"]
-  },
-  {
-    id: "puzzle_09", name: "Puzzle #9", centerLetter: "S", outerLetters: ["A", "E", "I", "L", "N", "T"], pangrams: ["SALIENT"],
-    validWords: ["SALIENT", "SILENT", "LISTEN", "ENLIST", "TINSEL", "SLATE", "STALE", "STEAL", "LEAST", "SAIL", "SALE", "SEAT", "SENT", "SINE", "SITE", "TAILS", "TILES", "NAILS", "LINES"]
-  },
-  {
-    id: "puzzle_10", name: "Puzzle #10", centerLetter: "T", outerLetters: ["A", "E", "I", "L", "N", "R"], pangrams: ["RATLINE"],
-    validWords: ["RATLINE", "LATTER", "LITTER", "LITTLE", "RATTLE", "RETINA", "RETAIN", "RETAIL", "TREAT", "TRAIL", "TRAIN", "TRIAL", "TILER", "TITLE", "TINE", "TIRE", "RATE", "LATE", "LINE", "TALL"]
-  },
-  {
-    id: "puzzle_11", name: "Puzzle #11", centerLetter: "D", outerLetters: ["A", "E", "I", "L", "N", "R"], pangrams: [],
-    validWords: ["DRAINED", "DIALER", "DENIAL", "NAILED", "RAILED", "RAIDER", "DEAR", "DARE", "DIAL", "DINE", "DIRE", "IDEAL", "LADEN", "LAND", "RIDE", "RIND", "DRAIN"]
-  },
-  {
-    id: "puzzle_12", name: "Puzzle #12", centerLetter: "L", outerLetters: ["A", "E", "I", "N", "O", "R"], pangrams: ["ORALINE"],
-    validWords: ["ORALINE", "LINEAR", "LONER", "LOAN", "LEAN", "LIAR", "LION", "LONE", "LORE", "NAIL", "NEAR", "NOIL", "ORAL", "RAIL", "REAL", "ROIL", "ROLE", "ROLL"]
-  },
-  {
-    id: "puzzle_13", name: "Puzzle #13", centerLetter: "M", outerLetters: ["A", "E", "I", "N", "O", "T"], pangrams: [],
-    validWords: ["MOMENT", "MOTION", "MOTIVE", "MINIMA", "ANIME", "AMINO", "ATOM", "MATE", "MEAN", "MEAT", "MINE", "MINT", "MOAN", "MOAT", "MOON", "TIME", "TOME"]
-  },
-  {
-    id: "puzzle_14", name: "Puzzle #14", centerLetter: "B", outerLetters: ["A", "E", "I", "L", "N", "R"], pangrams: [],
-    validWords: ["BRAILLE", "BRAINER", "BARREL", "BANNER", "BARON", "BAIL", "BALE", "BARE", "BEAN", "BEAR", "BEER", "BILE", "BINE", "BIRD", "BORE", "BORN", "BRAID", "BRINE", "BRIAR"]
-  },
-  {
-    id: "puzzle_15", name: "Puzzle #15", centerLetter: "C", outerLetters: ["A", "E", "I", "L", "N", "R"], pangrams: [],
-    validWords: ["CRANIAL", "CIRCLE", "CLEAN", "CLEAR", "CLERIC", "CLINE", "CRANE", "CRIER", "CABLE", "CANE", "CARE", "CASE", "CELL", "CEREAL", "CIDER", "CIRCA", "CLEANER"]
-  },
-  {
-    id: "puzzle_16", name: "Puzzle #16", centerLetter: "H", outerLetters: ["A", "E", "I", "L", "R", "T"], pangrams: [],
-    validWords: ["HEART", "HEATER", "HEIR", "HEIST", "HAIL", "HAIR", "HALE", "HALTER", "HARE", "HATE", "HEAL", "HEAR", "HEAT", "HILL", "HIRE", "HIT", "LATH", "LATHER", "THEIR", "THRILL"]
-  },
-  {
-    id: "puzzle_17", name: "Puzzle #17", centerLetter: "K", outerLetters: ["A", "E", "I", "N", "O", "R"], pangrams: [],
-    validWords: ["KRAKEN", "KARATE", "KENO", "KERN", "KIER", "KIND", "KING", "KINK", "KNEE", "KNOB", "KNOT", "KOREA", "KOREAN", "KRONA", "RAKE", "RANK", "ROKE", "OKRA"]
-  },
-  {
-    id: "puzzle_18", name: "Puzzle #18", centerLetter: "W", outerLetters: ["A", "E", "I", "N", "O", "R"], pangrams: [],
-    validWords: ["WORRIER", "WORSE", "WORN", "WORE", "WREN", "WIRE", "WINE", "WING", "WINER", "WARN", "WARE", "WANE", "WAIN", "WEAR", "WEIR", "WIER", "ROWE", "WROW"]
-  },
-  {
-    id: "puzzle_19", name: "Puzzle #19", centerLetter: "F", outerLetters: ["A", "E", "I", "L", "N", "R"], pangrams: [],
-    validWords: ["FINER", "FINAL", "FINALE", "FINIAL", "FIRER", "FIRE", "FIFE", "FILL", "FILER", "FLAIR", "FLARE", "FLEA", "FLEE", "FLIER", "FRAIL", "FRAME", "FREE", "FREER", "FRILL", "FRIAR"]
-  },
-  {
-    id: "puzzle_20", name: "Puzzle #20", centerLetter: "V", outerLetters: ["A", "E", "I", "N", "O", "R"], pangrams: [],
-    validWords: ["VINE", "VINER", "VINO", "VAN", "VANE", "VEIN", "VEINER", "VENA", "VERA", "VIA", "VIAL", "VIE", "VIRAL", "VIREO", "VIVID", "OVEN", "OVEN", "RIVEN"]
-  },
-  {
-    id: "puzzle_21", name: "Puzzle #21", centerLetter: "J", outerLetters: ["A", "E", "I", "N", "O", "R"], pangrams: [],
-    validWords: ["JAR", "JINX", "JIN", "JIVE", "JIVER", "JOIN", "JOINT", "JOKE", "JOKER", "JOUR", "RAJA", "JADE", "JANE", "JINN", "JINNI"]
-  },
-  {
-    id: "puzzle_22", name: "Puzzle #22", centerLetter: "Y", outerLetters: ["A", "E", "I", "L", "N", "R"], pangrams: [],
-    validWords: ["YEAR", "YEARN", "YELP", "YELL", "YETI", "YIELD", "YIP", "YOKE", "YORE", "YARN", "YAWN", "YAWNER", "LYRE", "LYING", "LAYER", "EARLY", "RELY"]
-  },
-  {
-    id: "puzzle_23", name: "Puzzle #23", centerLetter: "X", outerLetters: ["A", "E", "I", "O", "R", "T"], pangrams: [],
-    validWords: ["EXTRA", "EXERT", "EXILE", "EXIST", "EXIT", "OXIDE", "OXTER", "AXE", "AXIAL", "AXIOM", "TAXI", "TAXER", "TEXT", "TRIX", "XEROX", "XEROS", "XENIA", "XERIC"]
-  },
-  {
-    id: "puzzle_24", name: "Puzzle #24", centerLetter: "Z", outerLetters: ["A", "E", "I", "L", "N", "O"], pangrams: [],
-    validWords: ["ZONE", "ZONAL", "ZONING", "ZINE", "ZING", "ZINGER", "ZERO", "ZEBRA", "ZILCH", "ZILLION", "ZINNIA", "ZOE", "ZOO", "ZOON", "LAZE", "LAZING", "AMAZE", "AZALEA", "AZOIC"]
-  },
-  {
-    id: "puzzle_25", name: "Puzzle #25", centerLetter: "R", outerLetters: ["A", "B", "E", "I", "O", "T"], pangrams: [],
-    validWords: ["BARITONE", "BARB", "BARE", "BARET", "BARTER", "BITE", "BORE", "BORER", "BRAT", "BRIBE", "ORBIT", "ORBITER", "RABBI", "RARE", "RATE", "RATIO", "RIB", "RITE", "ROAR", "ROBE", "ROTATE"]
-  },
-  {
-    id: "puzzle_26", name: "Puzzle #26", centerLetter: "T", outerLetters: ["A", "E", "I", "O", "R", "S"], pangrams: ["TOASTER"],
-    validWords: ["TOASTER", "TASTER", "TASTE", "TREAT", "TOAST", "TOTAL", "TORT", "TORTE", "TORUS", "TORE", "TIRE", "TIER", "TRIOS", "TROTS", "ROAST", "ROSTER", "ROTATE", "STATE", "START"]
-  },
-  {
-    id: "puzzle_27", name: "Puzzle #27", centerLetter: "N", outerLetters: ["A", "E", "I", "O", "R", "S"], pangrams: [],
-    validWords: ["REASON", "SENIOR", "ARISEN", "RAISIN", "SNORES", "SNARE", "SNEER", "SINE", "SIREN", "NOISE", "NORIA", "NINE", "NONE", "NOON", "NOUN", "NEAR", "NORSE", "ONION"]
-  },
-  {
-    id: "puzzle_28", name: "Puzzle #28", centerLetter: "G", outerLetters: ["A", "E", "I", "L", "N", "R"], pangrams: [],
-    validWords: ["REGAL", "REGALIA", "REGAIN", "REGNAL", "GRAIN", "GRAIL", "GRILL", "GLEAN", "GLARE", "GLIER", "GIRL", "GINGER", "GLEN", "GLEANER", "RANGE", "RANGER", "ANGER", "ALIGN", "ALIEN"]
-  },
-  {
-    id: "puzzle_29", name: "Puzzle #29", centerLetter: "D", outerLetters: ["A", "E", "I", "N", "O", "R"], pangrams: [],
-    validWords: ["ORDAIN", "RADIO", "RADON", "RIDER", "DREAD", "DRAIN", "DRONE", "DINER", "DINED", "DOER", "DONE", "DIRE", "DINE", "ODDER", "UNDER", "ENDOR", "ADORN"]
-  },
-  {
-    id: "puzzle_30", name: "Puzzle #30", centerLetter: "P", outerLetters: ["A", "E", "I", "L", "N", "R"], pangrams: ["PLAINER"],
-    validWords: ["PLAINER", "PLAIN", "PLANER", "PANEL", "PAPER", "PARE", "PEAR", "PEAL", "PEEL", "PINE", "PIPE", "PIPER", "PLIER", "PRIER", "PAIR", "PAIL", "PAIN", "PENILE"]
-  },
-  {
-    id: "puzzle_31", name: "Puzzle #31", centerLetter: "E", outerLetters: ["A", "I", "L", "N", "R", "S"], pangrams: ["NAILERS"],
-    validWords: ["NAILERS", "NAILER", "LINEAR", "SALIEN", "SERIAL", "RENAL", "REINS", "RAISE", "RAISER", "REAL", "REEL", "REIN", "SEAL", "SEAR", "SEINE", "SERE", "SINE", "SIRE", "EARN", "EASE"]
-  },
-  {
-    id: "puzzle_32", name: "Puzzle #32", centerLetter: "I", outerLetters: ["A", "E", "L", "N", "O", "T"], pangrams: ["ISOLATE"],
-    validWords: ["ISOLATE", "ISLET", "ITALIAN", "INLET", "INTONE", "ION", "IRON", "IRATE", "ITEM", "LINE", "LION", "LOIN", "NAIL", "NATION", "NOTION", "TAIL", "TILE", "TOIL"]
-  }
-];
+/**
+ * CURLING PUZZLES — SPELLING BEE ENGINE
+ * Architecture:
+ * 1. Ambient Curling Stone Physics & Realistic Granite Material Rendering
+ * 2. Deterministic Daily Scheduler (Day 0 = Sept 8, 2026 Eastern Baseline)
+ * 3. Web Audio Acoustic Synthesizer (Velocity-sensitive stone clacks, ice sweeps, chimes)
+ * 4. Versioned LocalStorage Platform Continuity & Statistics
+ * 5. Spelling Bee Core Rules, Keyboard Shortcuts, & Game State Machine
+ */
 
-class SoundEngine {
-  constructor() {
-    this.ctx = null;
-    this.enabled = true;
-  }
+(function () {
+  "use strict";
 
-  init() {
-    try {
+  /* ==========================================================================
+     0. CONFIGURATION & CONSTANTS
+     ========================================================================== */
+  const STORAGE_KEY = "curling_puzzles_spelling_bee_v2";
+  const BASELINE_EPOCH_STR = "2026-09-08T00:00:00-04:00"; // Eastern baseline Day 0
+  const BASELINE_DATE_MS = new Date(BASELINE_EPOCH_STR).getTime();
+  const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+  // Curling Rank Titles & Percentage Thresholds
+  const RANKS = [
+    { title: "Beginner", pct: 0.00 },
+    { title: "Lead", pct: 0.05 },
+    { title: "Second", pct: 0.15 },
+    { title: "Third", pct: 0.30 },
+    { title: "Skip", pct: 0.50 },
+    { title: "Shot Maker", pct: 0.70 },
+    { title: "Club Champ", pct: 0.85 },
+    { title: "Button Master", pct: 1.00 }
+  ];
+
+  /* ==========================================================================
+     1. SOUND SYNTHESIZER (Web Audio API)
+     ========================================================================== */
+  class SoundEngine {
+    constructor() {
+      this.ctx = null;
+      this.enabled = true;
+    }
+
+    init() {
       if (!this.ctx) {
-        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-        if (AudioContextClass) {
-          this.ctx = new AudioContextClass();
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (AudioCtx) {
+          this.ctx = new AudioCtx();
         }
       }
       if (this.ctx && this.ctx.state === "suspended") {
         this.ctx.resume();
       }
-    } catch (e) {}
-  }
+    }
 
-  playTap() {
-    if (!this.enabled) return;
-    this.init();
-    if (!this.ctx) return;
-    const t = this.ctx.currentTime;
-    const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
+    /**
+     * Authentic curling stone-on-stone contact sound.
+     * High transient impact mode followed by short granite resonance.
+     */
+    playClack(intensity = 0.5) {
+      if (!this.enabled || !this.ctx) return;
+      try {
+        const now = this.ctx.currentTime;
+        const volume = Math.max(0.05, Math.min(0.35, intensity * 0.35));
 
-    osc.type = "sine";
-    osc.frequency.setValueAtTime(640, t);
-    osc.frequency.exponentialRampToValueAtTime(920, t + 0.032);
-
-    gain.gain.setValueAtTime(0.18, t);
-    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.035);
-
-    osc.connect(gain);
-    gain.connect(this.ctx.destination);
-    osc.start(t);
-    osc.stop(t + 0.038);
-  }
-
-  playDelete() {
-    if (!this.enabled) return;
-    this.init();
-    if (!this.ctx) return;
-    const t = this.ctx.currentTime;
-    const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
-
-    osc.type = "triangle";
-    osc.frequency.setValueAtTime(360, t);
-    osc.frequency.exponentialRampToValueAtTime(180, t + 0.05);
-
-    gain.gain.setValueAtTime(0.14, t);
-    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
-
-    osc.connect(gain);
-    gain.connect(this.ctx.destination);
-    osc.start(t);
-    osc.stop(t + 0.055);
-  }
-
-  playShuffle() {
-    if (!this.enabled) return;
-    this.init();
-    if (!this.ctx) return;
-    const t = this.ctx.currentTime;
-
-    [380, 520, 680].forEach((freq, idx) => {
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      const start = t + (idx * 0.03);
-
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(freq, start);
-      osc.frequency.exponentialRampToValueAtTime(freq + 160, start + 0.045);
-
-      gain.gain.setValueAtTime(0.09, start);
-      gain.gain.exponentialRampToValueAtTime(0.001, start + 0.05);
-
-      osc.connect(gain);
-      gain.connect(this.ctx.destination);
-      osc.start(start);
-      osc.stop(start + 0.055);
-    });
-  }
-
-  playError() {
-    if (!this.enabled) return;
-    this.init();
-    if (!this.ctx) return;
-    const t = this.ctx.currentTime;
-    const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
-
-    osc.type = "sawtooth";
-    osc.frequency.setValueAtTime(160, t);
-    osc.frequency.linearRampToValueAtTime(90, t + 0.16);
-
-    gain.gain.setValueAtTime(0.18, t);
-    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.16);
-
-    osc.connect(gain);
-    gain.connect(this.ctx.destination);
-    osc.start(t);
-    osc.stop(t + 0.17);
-  }
-
-  playSuccess(isPangram = false) {
-    if (!this.enabled) return;
-    this.init();
-    if (!this.ctx) return;
-    const t = this.ctx.currentTime;
-
-    if (!isPangram) {
-      [523.25, 659.25, 783.99].forEach((freq, idx) => {
+        // High strike transient
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
-        const start = t + (idx * 0.06);
 
         osc.type = "sine";
-        osc.frequency.setValueAtTime(freq, start);
+        osc.frequency.setValueAtTime(460, now);
+        osc.frequency.exponentialRampToValueAtTime(110, now + 0.065);
 
-        gain.gain.setValueAtTime(0.18, start);
-        gain.gain.exponentialRampToValueAtTime(0.001, start + 0.15);
+        gain.gain.setValueAtTime(volume, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.065);
 
         osc.connect(gain);
         gain.connect(this.ctx.destination);
-        osc.start(start);
-        osc.stop(start + 0.16);
-      });
-    } else {
-      [523.25, 659.25, 783.99, 1046.50, 1318.51].forEach((freq, idx) => {
+
+        osc.start(now);
+        osc.stop(now + 0.065);
+      } catch (e) {}
+    }
+
+    playLetter() {
+      if (!this.enabled || !this.ctx) return;
+      try {
+        const now = this.ctx.currentTime;
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
-        const start = t + (idx * 0.075);
 
-        osc.type = "triangle";
-        osc.frequency.setValueAtTime(freq, start);
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(560, now);
+        osc.frequency.exponentialRampToValueAtTime(430, now + 0.045);
 
-        gain.gain.setValueAtTime(0.24, start);
-        gain.gain.exponentialRampToValueAtTime(0.001, start + 0.35);
+        gain.gain.setValueAtTime(0.16, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.045);
 
         osc.connect(gain);
         gain.connect(this.ctx.destination);
-        osc.start(start);
-        osc.stop(start + 0.38);
-      });
-    }
-  }
-}
 
-const sounds = new SoundEngine();
-
-const STORAGE_KEY_PROGRESS = "spelling_bee_progress_v3";
-const STORAGE_KEY_STATS = "spelling_bee_stats_v3";
-const STORAGE_KEY_SOUND = "spelling_bee_sound_v3";
-const STORAGE_KEY_SCHEDULE = "spelling_bee_schedule_v4";
-const ANCHOR_EPOCH = new Date(2026, 8, 7).getTime();
-
-class StorageManager {
-  static getProgress() {
-    try {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY_PROGRESS)) || {};
-    } catch (e) {
-      return {};
-    }
-  }
-
-  static getStats() {
-    try {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY_STATS)) || {
-        streakCurrent: 0,
-        streakMax: 0,
-        lastPlayedDate: "",
-        wordsFound: 0,
-        totalPoints: 0,
-        pangramsFound: 0,
-        endsCleared: 0
-      };
-    } catch (e) {
-      return {
-        streakCurrent: 0,
-        streakMax: 0,
-        lastPlayedDate: "",
-        wordsFound: 0,
-        totalPoints: 0,
-        pangramsFound: 0,
-        endsCleared: 0
-      };
-    }
-  }
-
-  static saveStats(stats) {
-    try {
-      localStorage.setItem(STORAGE_KEY_STATS, JSON.stringify(stats));
-    } catch (e) {}
-  }
-
-  static getPuzzleState(puzzleId) {
-    const all = this.getProgress();
-    return all[puzzleId] || { foundWords: [], score: 0, completed: false };
-  }
-
-  static getSchedule() {
-    try {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY_SCHEDULE)) || { assignments: {}, lastIndex: -1 };
-    } catch (e) {
-      return { assignments: {}, lastIndex: -1 };
-    }
-  }
-
-  static saveSchedule(schedule) {
-    try {
-      localStorage.setItem(STORAGE_KEY_SCHEDULE, JSON.stringify(schedule));
-    } catch (e) {}
-  }
-
-  static saveWord(puzzleId, word, points, maxScore, isPangram, effectiveDate) {
-    const all = this.getProgress();
-    if (!all[puzzleId]) {
-      all[puzzleId] = { foundWords: [], score: 0, completed: false };
+        osc.start(now);
+        osc.stop(now + 0.045);
+      } catch (e) {}
     }
 
-    if (!all[puzzleId].foundWords.includes(word)) {
-      all[puzzleId].foundWords.push(word);
-      all[puzzleId].score += points;
+    playWordSuccess(isPangram) {
+      if (!this.enabled || !this.ctx) return;
+      try {
+        const now = this.ctx.currentTime;
+        const notes = isPangram ? [523.25, 659.25, 783.99, 1046.50] : [587.33, 783.99];
+        notes.forEach((freq, i) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          const start = now + i * 0.075;
 
-      const wasAlreadyCompleted = all[puzzleId].completed;
-      if (all[puzzleId].score >= Math.floor(maxScore * 0.70)) {
-        all[puzzleId].completed = true;
-      }
+          osc.type = "triangle";
+          osc.frequency.setValueAtTime(freq, start);
 
-      localStorage.setItem(STORAGE_KEY_PROGRESS, JSON.stringify(all));
+          gain.gain.setValueAtTime(0.18, start);
+          gain.gain.exponentialRampToValueAtTime(0.001, start + 0.32);
 
-      const stats = this.getStats();
-      stats.wordsFound += 1;
-      stats.totalPoints += points;
-      if (isPangram) stats.pangramsFound += 1;
-      if (!wasAlreadyCompleted && all[puzzleId].completed) {
-        stats.endsCleared += 1;
-      }
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
 
-      if (stats.lastPlayedDate !== effectiveDate) {
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-        const yStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, "0")}-${String(yesterday.getDate()).padStart(2, "0")}`;
+          osc.start(start);
+          osc.stop(start + 0.32);
+        });
+      } catch (e) {}
+    }
 
-        if (stats.lastPlayedDate === yStr) {
-          stats.streakCurrent += 1;
-        } else {
-          stats.streakCurrent = 1;
+    playError() {
+      if (!this.enabled || !this.ctx) return;
+      try {
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = "sawtooth";
+        osc.frequency.setValueAtTime(145, now);
+        osc.frequency.linearRampToValueAtTime(90, now + 0.12);
+
+        gain.gain.setValueAtTime(0.14, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start(now);
+        osc.stop(now + 0.12);
+      } catch (e) {}
+    }
+
+    /**
+     * Synthetic sweeping broom whoosh across pebbled ice.
+     */
+    playShuffle() {
+      if (!this.enabled || !this.ctx) return;
+      try {
+        const now = this.ctx.currentTime;
+        const bufferSize = Math.floor(this.ctx.sampleRate * 0.09);
+        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = Math.random() * 2 - 1;
         }
-        stats.streakMax = Math.max(stats.streakMax, stats.streakCurrent);
-        stats.lastPlayedDate = effectiveDate;
-      }
 
-      this.saveStats(stats);
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = buffer;
+
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = "bandpass";
+        filter.frequency.setValueAtTime(850, now);
+        filter.Q.setValueAtTime(2.8, now);
+
+        const gain = this.ctx.createGain();
+        gain.gain.setValueAtTime(0.14, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        noise.start(now);
+      } catch (e) {}
     }
-    return all[puzzleId];
   }
 
-  static resetAll() {
-    localStorage.removeItem(STORAGE_KEY_PROGRESS);
-    localStorage.removeItem(STORAGE_KEY_STATS);
-    localStorage.removeItem(STORAGE_KEY_SCHEDULE);
-  }
-}
+  /* ==========================================================================
+     2. AMBIENT CURLING STONE PHYSICS & REALISTIC GRANITE RENDERING
+     ========================================================================== */
+  class BackgroundPhysicsEngine {
+    constructor(canvas, soundEngine) {
+      this.canvas = canvas;
+      this.ctx = canvas.getContext("2d");
+      this.sound = soundEngine;
+      this.rocks = [];
+      this.animId = null;
+      this.lastTime = performance.now();
+      this.accumulator = 0;
+      this.fixedDt = 1000 / 60; // 16.667ms fixed physics timestep
+      this.reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      this.activeGameMode = false;
+      this.nextTakeoutTime = performance.now() + 35000;
 
-const GAME_RANKS = [
-  { name: "BEGINNER", pct: 0 },
-  { name: "GOOD START", pct: 0.03 },
-  { name: "MOVING UP", pct: 0.08 },
-  { name: "GOOD", pct: 0.15 },
-  { name: "SOLID", pct: 0.25 },
-  { name: "GREAT", pct: 0.40 },
-  { name: "AMAZING", pct: 0.55 },
-  { name: "GENIUS", pct: 0.70 }
-];
+      this.resize = this.resize.bind(this);
+      this.loop = this.loop.bind(this);
+      this.init();
+    }
 
-class SpellingBeeGame {
-  constructor() {
-    this.activePuzzle = null;
-    this.activePuzzleSource = "daily";
-    this.currentInput = "";
-    this.shuffledOuter = [];
-    this.cachedState = { foundWords: [], score: 0, completed: false };
-
-    this.puzzles = this.preparePuzzles(PUZZLE_DATA);
-    this.initDOM();
-    this.bindEvents();
-    this.refreshMenuAndVault();
-  }
-
-  getTodayDateString() {
-    const d = new Date();
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    return `${y}-${m}-${day}`;
-  }
-
-  preparePuzzles(rawList) {
-    const puzzleIds = new Set();
-    return rawList.map((item, index) => {
-      if (!item.id || puzzleIds.has(item.id)) {
-        throw new Error(`Invalid or duplicate puzzle id at position ${index + 1}`);
+    init() {
+      this.resize();
+      window.addEventListener("resize", this.resize, { passive: true });
+      this.spawnRocks();
+      if (!this.reducedMotion) {
+        this.animId = requestAnimationFrame(this.loop);
+      } else {
+        this.renderStatic();
       }
-      puzzleIds.add(item.id);
-      const center = item.centerLetter.toUpperCase();
-      const outers = item.outerLetters.map(l => l.toUpperCase());
-      const allowedLetters = new Set([center, ...outers]);
+    }
 
-      if (allowedLetters.size !== 7 || allowedLetters.has(center) && outers.includes(center)) {
-        throw new Error(`Puzzle ${item.id} must define seven unique letters with one center letter`);
+    resize() {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      this.width = window.innerWidth;
+      this.height = window.innerHeight;
+      this.canvas.width = this.width * dpr;
+      this.canvas.height = this.height * dpr;
+      this.ctx.scale(dpr, dpr);
+    }
+
+    createRock(x, y, vx, vy, radius, teamColor, depthScale = 1.0) {
+      // Deterministic procedural granite inclusions/speckles
+      const speckles = [];
+      const count = Math.floor(10 + radius * 0.3);
+      for (let s = 0; s < count; s++) {
+        const ang = Math.random() * Math.PI * 2;
+        const dist = Math.random() * (radius * 0.72);
+        speckles.push({
+          ox: Math.cos(ang) * dist,
+          oy: Math.sin(ang) * dist,
+          r: 0.8 + Math.random() * 1.4,
+          alpha: 0.15 + Math.random() * 0.35,
+          color: Math.random() > 0.4 ? "#263547" : "#E2EEF8"
+        });
       }
-
-      const validWords = [...new Set(item.validWords.map(w => String(w).toUpperCase()))].filter(clean => {
-        if (!/^[A-Z]+$/.test(clean) || clean.length < 4 || !clean.includes(center)) return false;
-        for (const ch of clean) {
-          if (!allowedLetters.has(ch)) return false;
-        }
-        return true;
-      });
-
-      const pangrams = validWords.filter(w => new Set(w).size === 7);
-
-      let maxScore = 0;
-      validWords.forEach(w => {
-        const isPangram = pangrams.includes(w);
-        const base = w.length === 4 ? 1 : w.length;
-        maxScore += isPangram ? (base + 7) : base;
-      });
 
       return {
-        id: item.id,
-        name: item.name,
-        index: index + 1,
-        centerLetter: center,
-        outerLetters: outers,
-        pangrams: pangrams.length ? pangrams : item.pangrams,
-        validWords: validWords,
-        maxScore: Math.max(maxScore, 30)
+        x,
+        y,
+        vx,
+        vy,
+        radius,
+        depthScale,
+        mass: radius * radius,
+        handleColor: teamColor, // '#D63B3B' (Red) or '#F0C647' (Yellow)
+        rotation: Math.random() * Math.PI * 2,
+        vRot: (Math.random() - 0.5) * 0.008,
+        speckles
       };
-    });
-  }
+    }
 
-  getDailyPuzzle() {
-    const today = new Date();
-    const todayKey = this.getTodayDateString();
-    const epoch = new Date(ANCHOR_EPOCH);
-    const dayDiff = Math.max(0, Math.floor((new Date(todayKey) - epoch) / 86400000));
-    const schedule = StorageManager.getSchedule();
-    let previousIndex = Number.isInteger(schedule.lastIndex) ? schedule.lastIndex : -1;
+    spawnRocks() {
+      const isMobile = this.width < 500;
+      // Active gameplay view is calmer; Menu screen is richer
+      const count = this.activeGameMode ? (isMobile ? 2 : 3) : (isMobile ? 4 : 6);
+      this.rocks = [];
 
-    for (let offset = 0; offset <= dayDiff; offset++) {
-      const date = new Date(epoch);
-      date.setDate(date.getDate() + offset);
-      const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-      if (!Number.isInteger(schedule.assignments[dateKey])) {
-        previousIndex = (previousIndex + 1) % this.puzzles.length;
-        schedule.assignments[dateKey] = previousIndex;
-      } else {
-        previousIndex = schedule.assignments[dateKey];
+      for (let i = 0; i < count; i++) {
+        const radius = isMobile ? (22 + Math.random() * 6) : (28 + Math.random() * 8);
+        const depthScale = 0.88 + (radius / 36) * 0.22;
+        let x, y, overlap;
+        let attempts = 0;
+
+        do {
+          overlap = false;
+          x = radius + 20 + Math.random() * (this.width - radius * 2 - 40);
+          y = radius + 20 + Math.random() * (this.height - radius * 2 - 40);
+
+          for (const r of this.rocks) {
+            const dx = x - r.x;
+            const dy = y - r.y;
+            if (Math.hypot(dx, dy) < radius + r.radius + 15) {
+              overlap = true;
+              break;
+            }
+          }
+          attempts++;
+        } while (overlap && attempts < 60);
+
+        const speed = (0.16 + Math.random() * 0.28) * (this.activeGameMode ? 0.6 : 1);
+        const angle = Math.random() * Math.PI * 2;
+        const teamColor = i % 2 === 0 ? "#D63B3B" : "#F0C647";
+
+        this.rocks.push(this.createRock(
+          x,
+          y,
+          Math.cos(angle) * speed,
+          Math.sin(angle) * speed,
+          radius,
+          teamColor,
+          depthScale
+        ));
       }
     }
 
-    schedule.lastIndex = previousIndex;
-    StorageManager.saveSchedule(schedule);
-    return this.getPuzzleInstance(this.puzzles[schedule.assignments[todayKey] || 0], todayKey, dayDiff + 1);
-  }
-
-  getPuzzleInstance(puzzle, dateKey, releaseNumber) {
-    return { ...puzzle, assignedDate: dateKey, releaseNumber, instanceId: `${puzzle.id}_${dateKey}` };
-  }
-
-  getReleasedPuzzleIds() {
-    this.getDailyPuzzle();
-    const todayKey = this.getTodayDateString();
-    const schedule = StorageManager.getSchedule();
-    return new Set(Object.entries(schedule.assignments)
-      .filter(([date]) => date < todayKey)
-      .map(([, index]) => this.puzzles[index]?.id)
-      .filter(Boolean));
-  }
-
-  getReleasedPuzzleInstances() {
-    this.getDailyPuzzle();
-    const todayKey = this.getTodayDateString();
-    const schedule = StorageManager.getSchedule();
-    return Object.entries(schedule.assignments)
-      .filter(([date]) => date < todayKey)
-      .sort(([left], [right]) => left.localeCompare(right))
-      .map(([date, index]) => this.getPuzzleInstance(this.puzzles[index], date, 0));
-  }
-
-  initDOM() {
-    this.screenMenu = document.getElementById("screen-menu");
-    this.screenGame = document.getElementById("screen-game");
-    this.screenVault = document.getElementById("screen-vault");
-
-    this.btnPlayDaily = document.getElementById("btn-play-daily");
-    this.btnOpenVault = document.getElementById("btn-open-vault");
-    this.btnOpenRules = document.getElementById("btn-open-rules");
-    this.btnOpenStats = document.getElementById("btn-open-stats");
-    this.dailyStatusText = document.getElementById("daily-puzzle-status");
-    this.vaultBadgeText = document.getElementById("vault-count-badge");
-
-    this.btnGameBack = document.getElementById("btn-game-back");
-    this.btnToggleWords = document.getElementById("btn-toggle-words");
-    this.gamePuzzleBadge = document.getElementById("game-puzzle-badge");
-    this.gamePuzzleName = document.getElementById("game-puzzle-name");
-    this.foundCountBadge = document.getElementById("game-found-count");
-    this.rankNameEl = document.getElementById("rank-name");
-    this.rankScoreEl = document.getElementById("rank-score");
-    this.progressFillEl = document.getElementById("progress-fill");
-    this.milestonesEl = document.getElementById("rank-milestones");
-    this.wordInputDisplay = document.getElementById("word-input-display");
-    this.hiveCluster = document.getElementById("hive-cluster");
-
-    this.btnDelete = document.getElementById("btn-action-delete");
-    this.btnShuffle = document.getElementById("btn-action-shuffle");
-    this.btnEnter = document.getElementById("btn-action-enter");
-
-    this.btnVaultBack = document.getElementById("btn-vault-back");
-    this.btnVaultStats = document.getElementById("btn-vault-stats");
-    this.vaultListContainer = document.getElementById("vault-puzzles-list");
-
-    this.modalWords = document.getElementById("modal-words");
-    this.btnCloseWords = document.getElementById("btn-close-words");
-    this.wordsTagCloud = document.getElementById("found-words-tagcloud");
-    this.wordsModalTitle = document.getElementById("words-modal-title");
-
-    this.modalStats = document.getElementById("modal-stats");
-    this.btnCloseStats = document.getElementById("btn-close-stats");
-    this.statStreak = document.getElementById("stat-streak");
-    this.statMaxStreak = document.getElementById("stat-max-streak");
-    this.statWordsFound = document.getElementById("stat-words-found");
-    this.statTotalPoints = document.getElementById("stat-total-points");
-    this.statPangrams = document.getElementById("stat-pangrams");
-    this.statEndsCleared = document.getElementById("stat-ends-cleared");
-    this.btnShareResult = document.getElementById("btn-share-result");
-
-    this.modalSettings = document.getElementById("modal-settings");
-    this.btnCloseSettings = document.getElementById("btn-close-settings");
-    this.btnToggleSound = document.getElementById("btn-toggle-sound");
-    this.btnResetData = document.getElementById("btn-reset-data");
-
-    this.toastContainer = document.getElementById("toast-container");
-
-    const savedSound = localStorage.getItem(STORAGE_KEY_SOUND);
-    if (savedSound === "off") {
-      sounds.enabled = false;
-      this.btnToggleSound.textContent = "OFF";
-      this.btnToggleSound.classList.remove("active");
-      this.btnToggleSound.setAttribute("aria-pressed", "false");
+    setGameMode(isGameActive) {
+      this.activeGameMode = isGameActive;
+      this.spawnRocks();
     }
-  }
 
-  bindEvents() {
-    const handleFirstGesture = () => {
-      sounds.init();
-      window.removeEventListener("pointerdown", handleFirstGesture);
-    };
-    window.addEventListener("pointerdown", handleFirstGesture, { once: true });
+    /**
+     * Occasional uncommon ambient "takeout shot" event.
+     */
+    triggerAmbientTakeout() {
+      if (this.rocks.length === 0 || this.reducedMotion) return;
+      const radius = this.width < 500 ? 26 : 32;
+      const fromLeft = Math.random() > 0.5;
+      const x = fromLeft ? -radius - 10 : this.width + radius + 10;
+      const y = this.height * 0.25 + Math.random() * (this.height * 0.5);
 
-    this.btnPlayDaily.addEventListener("click", () => {
-      sounds.playTap();
-      const daily = this.getDailyPuzzle();
-      this.loadPuzzle(daily, "daily");
-      this.switchScreen("game");
-    });
+      const targetX = this.width * 0.5 + (Math.random() - 0.5) * 80;
+      const targetY = this.height * 0.5 + (Math.random() - 0.5) * 80;
+      const angle = Math.atan2(targetY - y, targetX - x);
+      const speed = 1.1 + Math.random() * 0.5;
 
-    this.btnOpenVault.addEventListener("click", () => {
-      sounds.playTap();
-      this.renderVault();
-      this.switchScreen("vault");
-    });
+      const teamColor = Math.random() > 0.5 ? "#D63B3B" : "#F0C647";
+      const takeoutRock = this.createRock(
+        x,
+        y,
+        Math.cos(angle) * speed,
+        Math.sin(angle) * speed,
+        radius,
+        teamColor,
+        1.1
+      );
 
-    this.btnGameBack.addEventListener("click", () => {
-      sounds.playTap();
-      this.refreshMenuAndVault();
-      this.switchScreen("menu");
-    });
-
-    this.btnVaultBack.addEventListener("click", () => {
-      sounds.playTap();
-      this.refreshMenuAndVault();
-      this.switchScreen("menu");
-    });
-
-    this.btnDelete.addEventListener("click", () => this.handleDelete());
-    this.btnShuffle.addEventListener("click", () => this.handleShuffle());
-    this.btnEnter.addEventListener("click", () => this.handleEnter());
-
-    this.btnToggleWords.addEventListener("click", () => {
-      sounds.playTap();
-      this.openWordsModal();
-    });
-    this.btnCloseWords.addEventListener("click", () => {
-      sounds.playTap();
-      this.closeModal(this.modalWords);
-    });
-
-    this.btnOpenStats.addEventListener("click", () => {
-      sounds.playTap();
-      this.openStatsModal();
-    });
-    this.btnVaultStats.addEventListener("click", () => {
-      sounds.playTap();
-      this.openStatsModal();
-    });
-    this.btnCloseStats.addEventListener("click", () => {
-      sounds.playTap();
-      this.closeModal(this.modalStats);
-    });
-    this.btnShareResult.addEventListener("click", () => this.handleShareScore());
-
-    this.btnOpenRules.addEventListener("click", () => {
-      sounds.playTap();
-      this.openModal(this.modalSettings);
-    });
-    this.btnCloseSettings.addEventListener("click", () => {
-      sounds.playTap();
-      this.closeModal(this.modalSettings);
-    });
-
-    this.btnToggleSound.addEventListener("click", () => {
-      sounds.enabled = !sounds.enabled;
-      if (sounds.enabled) {
-        sounds.playTap();
-        this.btnToggleSound.textContent = "ON";
-        this.btnToggleSound.classList.add("active");
-        this.btnToggleSound.setAttribute("aria-pressed", "true");
-        localStorage.setItem(STORAGE_KEY_SOUND, "on");
-      } else {
-        this.btnToggleSound.textContent = "OFF";
-        this.btnToggleSound.classList.remove("active");
-        this.btnToggleSound.setAttribute("aria-pressed", "false");
-        localStorage.setItem(STORAGE_KEY_SOUND, "off");
+      this.rocks.push(takeoutRock);
+      if (this.rocks.length > 8) {
+        this.rocks.shift();
       }
-    });
+    }
 
-    this.btnResetData.addEventListener("click", () => {
-      sounds.playDelete();
-      if (confirm("Reset all saved progress, scores, and statistics?")) {
-        StorageManager.resetAll();
-        this.refreshMenuAndVault();
-        this.closeModal(this.modalSettings);
-        this.switchScreen("menu");
-        this.showToast("All progress reset");
-      }
-    });
+    resolveCollisions() {
+      const len = this.rocks.length;
+      for (let i = 0; i < len; i++) {
+        for (let j = i + 1; j < len; j++) {
+          const r1 = this.rocks[i];
+          const r2 = this.rocks[j];
+          const dx = r2.x - r1.x;
+          const dy = r2.y - r1.y;
+          const dist = Math.hypot(dx, dy);
+          const minDist = r1.radius + r2.radius;
 
-    [this.modalWords, this.modalStats, this.modalSettings].forEach(m => {
-      m.addEventListener("click", (e) => {
-        if (e.target === m) {
-          sounds.playTap();
-          this.closeModal(m);
-        }
-      });
-    });
+          if (dist < minDist && dist > 0.001) {
+            const nx = dx / dist;
+            const ny = dy / dist;
 
-    window.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") {
-        if (this.modalWords.classList.contains("active")) this.closeModal(this.modalWords);
-        if (this.modalStats.classList.contains("active")) this.closeModal(this.modalStats);
-        if (this.modalSettings.classList.contains("active")) this.closeModal(this.modalSettings);
-        return;
-      }
+            // Anti-penetration separation
+            const overlap = minDist - dist;
+            r1.x -= nx * overlap * 0.5;
+            r1.y -= ny * overlap * 0.5;
+            r2.x += nx * overlap * 0.5;
+            r2.y += ny * overlap * 0.5;
 
-      if (!this.screenGame.classList.contains("active")) return;
-      if (this.modalWords.classList.contains("active") || 
-          this.modalStats.classList.contains("active") || 
-          this.modalSettings.classList.contains("active")) return;
+            // Relative velocity
+            const kx = r1.vx - r2.vx;
+            const ky = r1.vy - r2.vy;
+            const velAlongNormal = kx * nx + ky * ny;
 
-      const key = e.key.toUpperCase();
-      if (key === "ENTER") {
-        e.preventDefault();
-        this.handleEnter();
-      } else if (key === "BACKSPACE" || key === "DELETE") {
-        e.preventDefault();
-        this.handleDelete();
-      } else if (key === " " || key === "SPACEBAR") {
-        e.preventDefault();
-        this.handleShuffle();
-      } else if (/^[A-Z]$/.test(key)) {
-        if (this.activePuzzle) {
-          const allowed = [this.activePuzzle.centerLetter, ...this.activePuzzle.outerLetters];
-          if (allowed.includes(key)) {
-            this.handleLetterTap(key);
-            this.pulseHexButton(key);
-          } else {
-            sounds.playError();
-            this.flashInputError();
+            // Resolve only if objects are moving toward each other
+            if (velAlongNormal > 0) {
+              const e = 0.82; // Controlled heavy granite restitution
+              const p = ((1 + e) * velAlongNormal) / (r1.mass + r2.mass);
+
+              r1.vx -= p * r2.mass * nx;
+              r1.vy -= p * r2.mass * ny;
+              r2.vx += p * r1.mass * nx;
+              r2.vy += p * r1.mass * ny;
+
+              // Curl spin transfer
+              const tangentX = -ny;
+              const tangentY = nx;
+              const tangVel = kx * tangentX + ky * tangentY;
+              r1.vRot -= tangVel * 0.0003;
+              r2.vRot += tangVel * 0.0003;
+
+              // Sound impact
+              if (velAlongNormal > 0.15) {
+                this.sound.playClack(Math.min(1, velAlongNormal / 1.8));
+              }
+            }
           }
         }
       }
-    });
-  }
+    }
 
-  openModal(el) {
-    el.classList.add("active");
-    el.setAttribute("aria-hidden", "false");
-  }
+    updatePhysics() {
+      for (const r of this.rocks) {
+        r.x += r.vx;
+        r.y += r.vy;
+        r.rotation += r.vRot;
 
-  closeModal(el) {
-    el.classList.remove("active");
-    el.setAttribute("aria-hidden", "true");
-  }
+        // Ice friction damping
+        r.vx *= 0.9996;
+        r.vy *= 0.9996;
+        r.vRot *= 0.998;
 
-  pulseHexButton(letter) {
-    const buttons = this.hiveCluster.querySelectorAll(".hex-stone");
-    buttons.forEach(btn => {
-      if (btn.textContent.trim() === letter) {
-        btn.classList.add("key-active");
-        setTimeout(() => btn.classList.remove("key-active"), 120);
+        // Subtle ambient glide maintenance
+        const speed = Math.hypot(r.vx, r.vy);
+        if (speed < 0.06) {
+          const nudgeAng = Math.random() * Math.PI * 2;
+          r.vx += Math.cos(nudgeAng) * 0.025;
+          r.vy += Math.sin(nudgeAng) * 0.025;
+        }
+
+        // Screen boundary cushions
+        if (r.x - r.radius < 0) {
+          r.x = r.radius;
+          r.vx = Math.abs(r.vx) * 0.88;
+        } else if (r.x + r.radius > this.width) {
+          r.x = this.width - r.radius;
+          r.vx = -Math.abs(r.vx) * 0.88;
+        }
+
+        if (r.y - r.radius < 0) {
+          r.y = r.radius;
+          r.vy = Math.abs(r.vy) * 0.88;
+        } else if (r.y + r.radius > this.height) {
+          r.y = this.height - r.radius;
+          r.vy = -Math.abs(r.vy) * 0.88;
+        }
       }
-    });
-  }
 
-  switchScreen(screenName) {
-    [this.screenMenu, this.screenGame, this.screenVault].forEach(s => s.classList.remove("active"));
-    if (screenName === "menu") this.screenMenu.classList.add("active");
-    if (screenName === "game") this.screenGame.classList.add("active");
-    if (screenName === "vault") this.screenVault.classList.add("active");
-  }
-
-  refreshMenuAndVault() {
-    const daily = this.getDailyPuzzle();
-    const state = StorageManager.getPuzzleState(daily.instanceId);
-    const rank = this.getRankForScore(state.score, daily.maxScore);
-
-    this.dailyStatusText.textContent = state.score > 0
-      ? `${state.score} PTS — ${rank.name}`
-      : "Play today's puzzle";
-
-    this.vaultBadgeText.textContent = `${this.getReleasedPuzzleInstances().length} Available`;
-  }
-
-  loadPuzzle(puzzle, source = "daily") {
-    this.activePuzzle = puzzle;
-    this.activePuzzleSource = source;
-    this.currentInput = "";
-    this.shuffledOuter = [...puzzle.outerLetters];
-    this.cachedState = StorageManager.getPuzzleState(puzzle.instanceId || puzzle.id);
-
-    this.gamePuzzleBadge.textContent = source === "daily" ? "TODAY'S PUZZLE" : "ARCHIVE";
-    this.gamePuzzleName.textContent = puzzle.name;
-
-    this.renderHive();
-    this.updateInputDisplay();
-    this.updateScoreAndRank();
-  }
-
-  renderHive() {
-    this.hiveCluster.innerHTML = "";
-    const hexPositions = [
-      "hex-pos-top",
-      "hex-pos-tr",
-      "hex-pos-br",
-      "hex-pos-bottom",
-      "hex-pos-bl",
-      "hex-pos-tl"
-    ];
-
-    const centerBtn = document.createElement("button");
-    centerBtn.className = "hex-stone center hex-pos-center";
-    centerBtn.setAttribute("aria-label", `Center letter ${this.activePuzzle.centerLetter}`);
-    centerBtn.innerHTML = `<div class="hex-inner">${this.activePuzzle.centerLetter}</div>`;
-    centerBtn.addEventListener("click", () => this.handleLetterTap(this.activePuzzle.centerLetter));
-    this.hiveCluster.appendChild(centerBtn);
-
-    this.shuffledOuter.forEach((letter, i) => {
-      const outerBtn = document.createElement("button");
-      outerBtn.className = `hex-stone outer ${hexPositions[i]}`;
-      outerBtn.setAttribute("aria-label", `Letter ${letter}`);
-      outerBtn.innerHTML = `<div class="hex-inner">${letter}</div>`;
-      outerBtn.addEventListener("click", () => this.handleLetterTap(letter));
-      this.hiveCluster.appendChild(outerBtn);
-    });
-  }
-
-  handleLetterTap(letter) {
-    if (this.currentInput.length >= 18) return;
-    sounds.playTap();
-    this.currentInput += letter;
-    this.updateInputDisplay();
-  }
-
-  handleDelete() {
-    if (this.currentInput.length === 0) return;
-    sounds.playDelete();
-    this.currentInput = this.currentInput.slice(0, -1);
-    this.updateInputDisplay();
-  }
-
-  handleShuffle() {
-    sounds.playShuffle();
-    const glyph = this.btnShuffle.querySelector(".shuffle-glyph");
-    if (glyph) {
-      glyph.classList.add("shuffle-spinning");
-      setTimeout(() => glyph.classList.remove("shuffle-spinning"), 220);
+      this.resolveCollisions();
     }
 
-    for (let i = this.shuffledOuter.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [this.shuffledOuter[i], this.shuffledOuter[j]] = [this.shuffledOuter[j], this.shuffledOuter[i]];
-    }
-    this.renderHive();
-  }
+    /**
+     * Authentic curling stone rendering:
+     * - Contact shadow on ice
+     * - Ailsa Craig / Trefor granite body
+     * - Mineral inclusions microtexture
+     * - Striking band and beveled shoulder
+     * - Team colored composite hub
+     * - Gooseneck handle with drop shadow onto the stone
+     */
+    draw() {
+      this.ctx.clearRect(0, 0, this.width, this.height);
 
-  handleEnter() {
-    const word = this.currentInput.trim().toUpperCase();
+      for (const r of this.rocks) {
+        const radius = r.radius;
+        this.ctx.save();
+        this.ctx.translate(r.x, r.y);
 
-    if (word.length < 4) {
-      sounds.playError();
-      this.flashInputError();
-      this.showToast("Too short (< 4 letters)");
-      return;
-    }
+        // 1. Soft Contact Shadow directly touching the ice
+        this.ctx.beginPath();
+        this.ctx.ellipse(2.5, 4.5, radius * 1.04, radius * 0.98, 0, 0, Math.PI * 2);
+        this.ctx.fillStyle = "rgba(16, 47, 74, 0.16)";
+        this.ctx.fill();
 
-    if (!word.includes(this.activePuzzle.centerLetter)) {
-      sounds.playError();
-      this.flashInputError();
-      this.showToast(`Must use center letter: ${this.activePuzzle.centerLetter}`);
-      return;
-    }
+        // Rotate for stone orientation
+        this.ctx.rotate(r.rotation);
 
-    if (this.cachedState.foundWords.includes(word)) {
-      sounds.playError();
-      this.flashInputError();
-      this.showToast("Already found!");
-      return;
-    }
+        // 2. Outer Granite Body
+        const graniteGrad = this.ctx.createRadialGradient(-radius * 0.3, -radius * 0.3, 2, 0, 0, radius);
+        graniteGrad.addColorStop(0, "#8EA3B8");
+        graniteGrad.addColorStop(0.35, "#566B82");
+        graniteGrad.addColorStop(0.85, "#304256");
+        graniteGrad.addColorStop(1, "#182635");
 
-    if (!this.activePuzzle.validWords.includes(word)) {
-      sounds.playError();
-      this.flashInputError();
-      this.showToast("Not in word list");
-      return;
-    }
+        this.ctx.beginPath();
+        this.ctx.arc(0, 0, radius, 0, Math.PI * 2);
+        this.ctx.fillStyle = graniteGrad;
+        this.ctx.fill();
 
-    const isPangram = this.activePuzzle.pangrams.includes(word);
-    const basePoints = word.length === 4 ? 1 : word.length;
-    const earnedPoints = isPangram ? (basePoints + 7) : basePoints;
+        // 3. Granite Microtexture & Mineral Inclusions
+        for (const sp of r.speckles) {
+          this.ctx.beginPath();
+          this.ctx.arc(sp.ox, sp.oy, sp.r, 0, Math.PI * 2);
+          this.ctx.fillStyle = sp.color;
+          this.ctx.globalAlpha = sp.alpha;
+          this.ctx.fill();
+        }
+        this.ctx.globalAlpha = 1.0;
 
-    sounds.playSuccess(isPangram);
+        // 4. Outer Bevel Rim Highlight & Striking Groove
+        this.ctx.beginPath();
+        this.ctx.arc(0, 0, radius * 0.88, 0, Math.PI * 2);
+        this.ctx.strokeStyle = "rgba(255, 255, 255, 0.28)";
+        this.ctx.lineWidth = 1;
+        this.ctx.stroke();
 
-    this.cachedState = StorageManager.saveWord(
-      this.activePuzzle.instanceId || this.activePuzzle.id,
-      word,
-      earnedPoints,
-      this.activePuzzle.maxScore,
-      isPangram,
-      this.getTodayDateString()
-    );
+        this.ctx.beginPath();
+        this.ctx.arc(0, 0, radius * 0.97, 0, Math.PI * 2);
+        this.ctx.strokeStyle = "rgba(16, 47, 74, 0.4)";
+        this.ctx.lineWidth = 1.2;
+        this.ctx.stroke();
 
-    if (isPangram) {
-      this.showToast(`PANGRAM! +${earnedPoints} PTS!`, true);
-    } else {
-      const compliments = ["Good!", "Great!", "Awesome!", "Nice!", "Solid!"];
-      const accolade = compliments[Math.floor(Math.random() * compliments.length)];
-      this.showToast(`${accolade} +${earnedPoints} PTS`);
-    }
+        // 5. Central Hub Plate (Composite Team Color)
+        const hubGrad = this.ctx.createRadialGradient(-radius * 0.15, -radius * 0.15, 1, 0, 0, radius * 0.44);
+        if (r.handleColor === "#D63B3B") {
+          hubGrad.addColorStop(0, "#EE6865");
+          hubGrad.addColorStop(1, "#B92E34");
+        } else {
+          hubGrad.addColorStop(0, "#FFE698");
+          hubGrad.addColorStop(1, "#D8AA32");
+        }
 
-    this.currentInput = "";
-    this.updateInputDisplay();
-    this.updateScoreAndRank();
-  }
+        this.ctx.beginPath();
+        this.ctx.arc(0, 0, radius * 0.44, 0, Math.PI * 2);
+        this.ctx.fillStyle = hubGrad;
+        this.ctx.fill();
+        this.ctx.strokeStyle = "rgba(255, 255, 255, 0.65)";
+        this.ctx.lineWidth = 1.2;
+        this.ctx.stroke();
 
-  updateInputDisplay() {
-    if (this.currentInput.length === 0) {
-      this.wordInputDisplay.innerHTML = `<span class="input-placeholder">TYPE OR TAP LETTERS</span>`;
-      return;
-    }
+        // 6. Handle Drop Shadow onto the Stone Surface
+        this.ctx.fillStyle = "rgba(16, 47, 74, 0.32)";
+        this.ctx.beginPath();
+        this.ctx.roundRect(-radius * 0.24 + 1.5, -3 + 2.5, radius * 0.48, 6, 3);
+        this.ctx.fill();
 
-    let html = "";
-    for (let i = 0; i < this.currentInput.length; i++) {
-      const ch = this.currentInput[i];
-      const isCenter = ch === this.activePuzzle.centerLetter;
-      const cls = isCenter ? "input-letter center-letter-highlight" : "input-letter";
-      html += `<span class="${cls}">${ch}</span>`;
-    }
-    this.wordInputDisplay.innerHTML = html;
-  }
+        // 7. Raised Gooseneck Handle Grip
+        this.ctx.fillStyle = r.handleColor === "#D63B3B" ? "#D63B3B" : "#F0C647";
+        this.ctx.beginPath();
+        this.ctx.roundRect(-radius * 0.24, -3, radius * 0.48, 6, 3);
+        this.ctx.fill();
 
-  flashInputError() {
-    this.wordInputDisplay.classList.remove("shake-error");
-    void this.wordInputDisplay.offsetWidth;
-    this.wordInputDisplay.classList.add("shake-error");
-  }
+        // 8. Handle Spine Highlight
+        this.ctx.fillStyle = "rgba(255, 255, 255, 0.75)";
+        this.ctx.fillRect(-radius * 0.2, -1.2, radius * 0.4, 2);
 
-  getRankForScore(score, maxScore) {
-    let cur = GAME_RANKS[0];
-    for (let i = GAME_RANKS.length - 1; i >= 0; i--) {
-      if (score >= Math.floor(GAME_RANKS[i].pct * maxScore)) {
-        cur = GAME_RANKS[i];
-        break;
+        // Center Chrome Bolt
+        this.ctx.beginPath();
+        this.ctx.arc(0, 0, 2.2, 0, Math.PI * 2);
+        this.ctx.fillStyle = "#FFFFFF";
+        this.ctx.fill();
+
+        this.ctx.restore();
       }
     }
-    return cur;
-  }
 
-  updateScoreAndRank() {
-    const score = this.cachedState.score;
-    const maxScore = this.activePuzzle.maxScore;
-    const rank = this.getRankForScore(score, maxScore);
+    loop(currentTime) {
+      let frameTime = currentTime - this.lastTime;
+      if (frameTime > 100) frameTime = 100;
+      this.lastTime = currentTime;
 
-    this.rankScoreEl.textContent = score;
-    this.rankNameEl.textContent = rank.name;
-    this.foundCountBadge.textContent = this.cachedState.foundWords.length;
-
-    const pct = Math.min(100, Math.round((score / maxScore) * 100));
-    this.progressFillEl.style.width = `${pct}%`;
-
-    this.milestonesEl.innerHTML = "";
-    GAME_RANKS.forEach(r => {
-      const pip = document.createElement("div");
-      pip.className = "rank-pip";
-      pip.style.left = `${r.pct * 100}%`;
-      if (score >= Math.floor(r.pct * maxScore)) {
-        pip.classList.add("reached");
+      this.accumulator += frameTime;
+      while (this.accumulator >= this.fixedDt) {
+        this.updatePhysics();
+        this.accumulator -= this.fixedDt;
       }
-      this.milestonesEl.appendChild(pip);
-    });
-  }
 
-  renderVault() {
-    this.vaultListContainer.innerHTML = "";
+      if (currentTime > this.nextTakeoutTime) {
+        this.triggerAmbientTakeout();
+        this.nextTakeoutTime = currentTime + 32000 + Math.random() * 20000;
+      }
 
-    this.getReleasedPuzzleInstances().forEach(puzzle => {
-      const state = StorageManager.getPuzzleState(puzzle.instanceId);
-      const card = document.createElement("div");
-      card.className = "vault-puzzle-card";
-      if (state.completed) card.classList.add("completed");
-
-      const rank = this.getRankForScore(state.score, puzzle.maxScore);
-
-      card.innerHTML = `
-        <div class="vault-card-info">
-          <span class="vault-date">${puzzle.name}</span>
-          <span class="vault-title">Center: ${puzzle.centerLetter} • Letters: ${puzzle.outerLetters.join(" ")}</span>
-          <span class="vault-stats-chip">WORDS: ${state.foundWords.length}/${puzzle.validWords.length} • ${state.score} PTS (${rank.name})</span>
-        </div>
-        <div class="vault-play-badge">${state.completed ? "★ COMPLETED" : "PLAY"}</div>
-      `;
-
-      card.addEventListener("click", () => {
-        sounds.playTap();
-        this.loadPuzzle(puzzle, "vault");
-        this.switchScreen("game");
-      });
-
-      this.vaultListContainer.appendChild(card);
-    });
-  }
-
-  openWordsModal() {
-    this.wordsModalTitle.textContent = `FOUND WORDS (${this.cachedState.foundWords.length})`;
-    this.wordsTagCloud.innerHTML = "";
-
-    if (this.cachedState.foundWords.length === 0) {
-      this.wordsTagCloud.innerHTML = `
-        <p style="font-family: var(--font-mono); font-size: 0.78rem; color: #475569;">
-          No words found yet.
-        </p>
-      `;
-    } else {
-      const sorted = [...this.cachedState.foundWords].sort();
-      sorted.forEach(word => {
-        const isPangram = this.activePuzzle.pangrams.includes(word);
-        const tag = document.createElement("span");
-        tag.className = isPangram ? "word-tag pangram" : "word-tag";
-        tag.textContent = isPangram ? `★ ${word}` : word;
-        this.wordsTagCloud.appendChild(tag);
-      });
+      this.draw();
+      this.animId = requestAnimationFrame(this.loop);
     }
 
-    this.openModal(this.modalWords);
-  }
-
-  openStatsModal() {
-    const stats = StorageManager.getStats();
-    this.statStreak.textContent = stats.streakCurrent;
-    this.statMaxStreak.textContent = stats.streakMax;
-    this.statWordsFound.textContent = stats.wordsFound;
-    this.statTotalPoints.textContent = stats.totalPoints;
-    this.statPangrams.textContent = stats.pangramsFound;
-    this.statEndsCleared.textContent = stats.endsCleared;
-
-    this.openModal(this.modalStats);
-  }
-
-  handleShareScore() {
-    sounds.playTap();
-    const puzzle = this.activePuzzle || this.getDailyPuzzle();
-    const state = StorageManager.getPuzzleState(puzzle.instanceId || puzzle.id);
-    const rank = this.getRankForScore(state.score, puzzle.maxScore);
-
-    const shareText = `SPELLING BEE — ${puzzle.name}\n` +
-      `Score: ${state.score} PTS (${rank.name})\n` +
-      `Words: ${state.foundWords.length}\n` +
-      `Date: ${this.getTodayDateString()}`;
-
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(shareText).then(() => {
-        this.showToast("Result copied to clipboard!");
-      }).catch(() => {
-        this.showToast("Copied to clipboard!");
-      });
-    } else {
-      this.showToast("Result copied!");
+    renderStatic() {
+      this.draw();
     }
   }
 
-  showToast(message, isPangram = false) {
-    const toast = document.createElement("div");
-    toast.className = isPangram ? "brutal-toast toast-pangram" : "brutal-toast";
-    toast.textContent = message;
+  /* ==========================================================================
+     3. PERSISTENCE & CONTINUITY ENGINE
+     ========================================================================== */
+  class StorageEngine {
+    constructor() {
+      this.state = this.load();
+    }
 
-    this.toastContainer.appendChild(toast);
+    getInitialState() {
+      return {
+        version: 2,
+        soundEnabled: true,
+        stats: {
+          played: 0,
+          geniusCount: 0,
+          currentStreak: 0,
+          bestStreak: 0,
+          totalWords: 0,
+          totalPangrams: 0,
+          lastPlayedDayIndex: null
+        },
+        puzzleProgress: {}
+      };
+    }
 
-    setTimeout(() => {
-      toast.style.opacity = "0";
-      toast.style.transform = "translateY(-8px)";
-      toast.style.transition = "all 0.18s ease-out";
-      setTimeout(() => toast.remove(), 180);
-    }, 1700);
+    load() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return this.getInitialState();
+        const data = JSON.parse(raw);
+        if (!data.version || data.version < 2) {
+          const initial = this.getInitialState();
+          initial.soundEnabled = data.soundEnabled !== false;
+          return initial;
+        }
+        return data;
+      } catch (e) {
+        return this.getInitialState();
+      }
+    }
+
+    save() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state));
+      } catch (e) {}
+    }
+
+    getPuzzleState(puzzleId) {
+      if (!this.state.puzzleProgress[puzzleId]) {
+        this.state.puzzleProgress[puzzleId] = {
+          foundWords: [],
+          score: 0,
+          completed: false
+        };
+      }
+      return this.state.puzzleProgress[puzzleId];
+    }
+
+    savePuzzleProgress(puzzleId, foundWords, score, isCompleted) {
+      this.state.puzzleProgress[puzzleId] = {
+        foundWords: Array.from(new Set(foundWords)),
+        score,
+        completed: isCompleted
+      };
+      this.save();
+    }
+
+    recordWordFound(isPangram) {
+      this.state.stats.totalWords = (this.state.stats.totalWords || 0) + 1;
+      if (isPangram) {
+        this.state.stats.totalPangrams = (this.state.stats.totalPangrams || 0) + 1;
+      }
+      this.save();
+    }
+
+    recordDailyCompletion(dayIndex, reachedGenius) {
+      const stats = this.state.stats;
+      stats.played = (stats.played || 0) + 1;
+      if (reachedGenius) stats.geniusCount = (stats.geniusCount || 0) + 1;
+
+      if (stats.lastPlayedDayIndex === dayIndex - 1) {
+        stats.currentStreak = (stats.currentStreak || 0) + 1;
+      } else if (stats.lastPlayedDayIndex !== dayIndex) {
+        stats.currentStreak = 1;
+      }
+      stats.bestStreak = Math.max(stats.bestStreak || 0, stats.currentStreak);
+      stats.lastPlayedDayIndex = dayIndex;
+      this.save();
+    }
   }
-}
 
-document.addEventListener("DOMContentLoaded", () => {
-  window.spellingBee = new SpellingBeeGame();
-});
+  /* ==========================================================================
+     4. DETERMINISTIC DAILY SCHEDULER (Day 0 = Sept 8, 2026)
+     ========================================================================== */
+  class Scheduler {
+    constructor(puzzles) {
+      this.puzzles = puzzles || [];
+    }
+
+    getCurrentDayIndex() {
+      const now = new Date();
+      const diffMs = now.getTime() - BASELINE_DATE_MS;
+      const dayIndex = Math.floor(diffMs / MS_PER_DAY);
+      return Math.max(0, dayIndex);
+    }
+
+    getPuzzleForDay(dayIndex) {
+      if (this.puzzles.length === 0) return null;
+      const idx = dayIndex % this.puzzles.length;
+      return this.puzzles[idx];
+    }
+
+    getTodayPuzzle() {
+      const dayIndex = this.getCurrentDayIndex();
+      return {
+        puzzle: this.getPuzzleForDay(dayIndex),
+        dayIndex
+      };
+    }
+
+    getReleasedVaultPuzzles() {
+      const currentDay = this.getCurrentDayIndex();
+      const vault = [];
+
+      for (let day = 0; day < currentDay; day++) {
+        const p = this.getPuzzleForDay(day);
+        if (p) {
+          vault.push({
+            puzzle: p,
+            dayIndex: day,
+            dateLabel: this.formatDateForDay(day)
+          });
+        }
+      }
+      return vault.reverse();
+    }
+
+    formatDateForDay(dayIndex) {
+      const date = new Date(BASELINE_DATE_MS + dayIndex * MS_PER_DAY);
+      return date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric"
+      });
+    }
+  }
+
+  /* ==========================================================================
+     5. MAIN APP CONTROLLER
+     ========================================================================== */
+  class SpellingBeeApp {
+    constructor() {
+      this.sound = new SoundEngine();
+      this.storage = new StorageEngine();
+      this.scheduler = new Scheduler(window.SPELLING_BEE_PUZZLES || []);
+
+      // DOM Elements
+      this.screenMenu = document.getElementById("screen-menu");
+      this.screenGame = document.getElementById("screen-game");
+      this.wordDisplay = document.getElementById("current-word-display");
+      this.toastEl = document.getElementById("toast-message");
+
+      // Active Game State
+      this.activePuzzle = null;
+      this.activeDayIndex = 0;
+      this.isVaultPuzzle = false;
+      this.currentWord = "";
+      this.outerLettersShuffled = [];
+      this.maxPossibleScore = 0;
+      this.toastTimer = null;
+
+      const canvas = document.getElementById("bg-canvas");
+      this.physics = new BackgroundPhysicsEngine(canvas, this.sound);
+
+      this.init();
+    }
+
+    init() {
+      this.initSoundSetting();
+      this.bindEvents();
+      this.renderMenu();
+
+      setInterval(() => this.checkMidnightRollover(), 60000);
+    }
+
+    initSoundSetting() {
+      this.sound.enabled = this.storage.state.soundEnabled !== false;
+      this.updateSoundButtonUI();
+    }
+
+    updateSoundButtonUI() {
+      const onIcon = document.getElementById("sound-icon-on");
+      const offIcon = document.getElementById("sound-icon-off");
+      const text = document.getElementById("sound-status-text");
+      if (this.sound.enabled) {
+        onIcon.classList.remove("hidden");
+        offIcon.classList.add("hidden");
+        text.textContent = "Sound: ON";
+      } else {
+        onIcon.classList.add("hidden");
+        offIcon.classList.remove("hidden");
+        text.textContent = "Sound: OFF";
+      }
+    }
+
+    toggleSound() {
+      this.sound.init();
+      this.sound.enabled = !this.sound.enabled;
+      this.storage.state.soundEnabled = this.sound.enabled;
+      this.storage.save();
+      this.updateSoundButtonUI();
+      if (this.sound.enabled) {
+        this.sound.playLetter();
+      }
+    }
+
+    bindEvents() {
+      document.getElementById("btn-sound-toggle").addEventListener("click", () => this.toggleSound());
+
+      document.getElementById("btn-play-today").addEventListener("click", () => {
+        this.sound.init();
+        this.sound.playLetter();
+        const { puzzle, dayIndex } = this.scheduler.getTodayPuzzle();
+        this.loadPuzzle(puzzle, dayIndex, false);
+        this.showScreen("game");
+      });
+
+      document.getElementById("btn-game-back").addEventListener("click", () => {
+        this.sound.playLetter();
+        this.renderMenu();
+        this.showScreen("menu");
+      });
+
+      this.bindModal("btn-open-vault", "modal-vault", "btn-close-vault", () => this.renderVault());
+      this.bindModal("btn-menu-stats", "modal-stats", "btn-close-stats", () => this.renderStats());
+      this.bindModal("btn-menu-help", "modal-help", "btn-close-help");
+      this.bindModal("btn-game-help", "modal-help", "btn-close-help");
+      this.bindModal("btn-game-words-toggle", "modal-words", "btn-close-words", () => this.renderFoundWordsModal());
+
+      document.getElementById("cell-center").addEventListener("click", () => {
+        this.addLetter(this.activePuzzle.centerLetter);
+      });
+
+      for (let i = 0; i < 6; i++) {
+        document.getElementById(`cell-${i}`).addEventListener("click", () => {
+          this.addLetter(this.outerLettersShuffled[i]);
+        });
+      }
+
+      document.getElementById("btn-action-delete").addEventListener("click", () => this.deleteLetter());
+      document.getElementById("btn-action-shuffle").addEventListener("click", () => this.shuffleOuterLetters());
+      document.getElementById("btn-action-enter").addEventListener("click", () => this.submitWord());
+
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          this.closeAllModals();
+          return;
+        }
+
+        if (!this.screenGame.classList.contains("active")) return;
+        if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+        const key = e.key.toUpperCase();
+        if (/^[A-Z]$/.test(key)) {
+          e.preventDefault();
+          this.addLetter(key);
+        } else if (e.key === "Backspace") {
+          e.preventDefault();
+          this.deleteLetter();
+        } else if (e.key === "Enter") {
+          e.preventDefault();
+          this.submitWord();
+        } else if (e.key === " ") {
+          e.preventDefault();
+          this.shuffleOuterLetters();
+        }
+      });
+    }
+
+    closeAllModals() {
+      document.querySelectorAll(".app-modal.active").forEach((modal) => {
+        modal.classList.remove("active");
+        modal.setAttribute("aria-hidden", "true");
+      });
+    }
+
+    bindModal(triggerId, modalId, closeId, onOpen) {
+      const trigger = document.getElementById(triggerId);
+      const modal = document.getElementById(modalId);
+      const close = document.getElementById(closeId);
+      const backdrop = modal.querySelector(".modal-backdrop");
+
+      const open = () => {
+        this.sound.init();
+        this.sound.playLetter();
+        if (onOpen) onOpen();
+        modal.classList.add("active");
+        modal.setAttribute("aria-hidden", "false");
+      };
+
+      const hide = () => {
+        this.sound.playLetter();
+        modal.classList.remove("active");
+        modal.setAttribute("aria-hidden", "true");
+      };
+
+      if (trigger) trigger.addEventListener("click", open);
+      if (close) close.addEventListener("click", hide);
+      if (backdrop) backdrop.addEventListener("click", hide);
+    }
+
+    showScreen(screenName) {
+      if (screenName === "game") {
+        this.screenMenu.classList.remove("active");
+        this.screenGame.classList.add("active");
+        this.physics.setGameMode(true);
+      } else {
+        this.screenGame.classList.remove("active");
+        this.screenMenu.classList.add("active");
+        this.physics.setGameMode(false);
+      }
+    }
+
+    /* ==========================================================================
+       PUZZLE ENGINE & SCORING
+       ========================================================================== */
+    loadPuzzle(puzzle, dayIndex, isVault) {
+      if (!puzzle) return;
+      this.activePuzzle = puzzle;
+      this.activeDayIndex = dayIndex;
+      this.isVaultPuzzle = isVault;
+      this.currentWord = "";
+      this.outerLettersShuffled = [...puzzle.outerLetters];
+
+      this.maxPossibleScore = puzzle.acceptedWords.reduce((acc, word) => {
+        return acc + this.getWordPoints(word);
+      }, 0);
+
+      const centerLetter = puzzle.centerLetter;
+      document.getElementById("center-char").textContent = centerLetter;
+      document.getElementById("cell-center").setAttribute("aria-label", `Center letter ${centerLetter}, mandatory`);
+      this.updateOuterLetterDisplays();
+
+      const activeLabel = document.getElementById("game-active-label");
+      const activeDate = document.getElementById("game-active-date");
+      activeLabel.textContent = isVault ? `Vault #${dayIndex}` : "Today";
+      activeDate.textContent = this.scheduler.formatDateForDay(dayIndex);
+
+      this.updateInputDisplay();
+      this.updateScoreAndRanks();
+      this.renderRankDots();
+    }
+
+    updateOuterLetterDisplays() {
+      for (let i = 0; i < 6; i++) {
+        const letter = this.outerLettersShuffled[i];
+        const cell = document.getElementById(`cell-${i}`);
+        cell.querySelector(".letter-char").textContent = letter;
+        cell.setAttribute("aria-label", `Letter ${letter}`);
+      }
+    }
+
+    shuffleOuterLetters() {
+      this.sound.playShuffle();
+      const grid = document.getElementById("honeycomb-grid");
+      grid.classList.add("shuffling");
+
+      setTimeout(() => {
+        for (let i = this.outerLettersShuffled.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [this.outerLettersShuffled[i], this.outerLettersShuffled[j]] = [this.outerLettersShuffled[j], this.outerLettersShuffled[i]];
+        }
+        this.updateOuterLetterDisplays();
+        grid.classList.remove("shuffling");
+      }, 120);
+    }
+
+    addLetter(char) {
+      if (this.currentWord.length >= 19) return;
+      this.sound.init();
+      this.sound.playLetter();
+      this.currentWord += char;
+      this.updateInputDisplay();
+    }
+
+    deleteLetter() {
+      if (this.currentWord.length === 0) return;
+      this.sound.playLetter();
+      this.currentWord = this.currentWord.slice(0, -1);
+      this.updateInputDisplay();
+    }
+
+    updateInputDisplay() {
+      this.wordDisplay.innerHTML = "";
+      if (this.currentWord.length === 0) {
+        this.wordDisplay.innerHTML = '<span class="cursor" aria-hidden="true">|</span>';
+        return;
+      }
+
+      const center = this.activePuzzle.centerLetter;
+      for (const ch of this.currentWord) {
+        const span = document.createElement("span");
+        span.textContent = ch;
+        if (ch === center) {
+          span.classList.add("letter-center-match");
+        }
+        this.wordDisplay.appendChild(span);
+      }
+
+      const cursor = document.createElement("span");
+      cursor.className = "cursor";
+      cursor.textContent = "|";
+      cursor.setAttribute("aria-hidden", "true");
+      this.wordDisplay.appendChild(cursor);
+    }
+
+    getWordPoints(word) {
+      if (word.length === 4) return 1;
+      let pts = word.length;
+      if (this.isPangram(word)) {
+        pts += 7;
+      }
+      return pts;
+    }
+
+    isPangram(word) {
+      const set = new Set(word.split(""));
+      return set.size === 7;
+    }
+
+    submitWord() {
+      const word = this.currentWord.toUpperCase().trim();
+      if (!word) return;
+
+      const pState = this.storage.getPuzzleState(this.activePuzzle.id);
+
+      if (word.length < 4) {
+        this.rejectWord("Too short");
+        return;
+      }
+
+      if (!word.includes(this.activePuzzle.centerLetter)) {
+        this.rejectWord("Missing center letter");
+        return;
+      }
+
+      if (pState.foundWords.includes(word)) {
+        this.rejectWord("Already found");
+        return;
+      }
+
+      if (!this.activePuzzle.acceptedWords.includes(word)) {
+        this.rejectWord("Not in word list");
+        return;
+      }
+
+      const isPangram = this.isPangram(word);
+      const points = this.getWordPoints(word);
+
+      pState.foundWords.push(word);
+      pState.score = (pState.score || 0) + points;
+
+      const isGenius = (pState.score / this.maxPossibleScore) >= 0.7;
+      this.storage.savePuzzleProgress(this.activePuzzle.id, pState.foundWords, pState.score, isGenius);
+      this.storage.recordWordFound(isPangram);
+
+      if (isGenius && !this.isVaultPuzzle) {
+        this.storage.recordDailyCompletion(this.activeDayIndex, true);
+      }
+
+      this.sound.playWordSuccess(isPangram);
+      if (isPangram) {
+        this.showToast(`Pangram! +${points}`, true);
+      } else if (points >= 6) {
+        this.showToast(`Awesome! +${points}`);
+      } else {
+        this.showToast(`Good! +${points}`);
+      }
+
+      this.currentWord = "";
+      this.updateInputDisplay();
+      this.updateScoreAndRanks();
+    }
+
+    rejectWord(msg) {
+      this.sound.playError();
+      this.showToast(msg, false);
+      this.wordDisplay.classList.add("shake-input");
+      setTimeout(() => {
+        this.wordDisplay.classList.remove("shake-input");
+      }, 400);
+    }
+
+    showToast(message, isPangram = false) {
+      if (this.toastTimer) clearTimeout(this.toastTimer);
+      this.toastEl.textContent = message;
+      this.toastEl.className = "toast-popup show" + (isPangram ? " toast-pangram" : "");
+      this.toastTimer = setTimeout(() => {
+        this.toastEl.classList.remove("show");
+      }, 1600);
+    }
+
+    getRankForScore(score) {
+      const ratio = this.maxPossibleScore > 0 ? score / this.maxPossibleScore : 0;
+      let current = RANKS[0];
+      let next = RANKS[1];
+
+      for (let i = 0; i < RANKS.length; i++) {
+        if (ratio >= RANKS[i].pct) {
+          current = RANKS[i];
+          next = RANKS[i + 1] || null;
+        }
+      }
+      return { current, next, ratio };
+    }
+
+    updateScoreAndRanks() {
+      const pState = this.storage.getPuzzleState(this.activePuzzle.id);
+      const score = pState.score || 0;
+      const { current, next } = this.getRankForScore(score);
+
+      document.getElementById("current-score-label").textContent = score;
+      document.getElementById("current-rank-label").textContent = current.title;
+
+      const count = pState.foundWords.length;
+      document.getElementById("game-words-counter").textContent = `${count} word${count === 1 ? "" : "s"}`;
+
+      const pct = Math.min(100, Math.round((score / this.maxPossibleScore) * 100));
+      const fill = document.getElementById("progress-fill-bar");
+      fill.style.width = `${pct}%`;
+
+      const nextInfo = document.getElementById("next-rank-info");
+      if (next) {
+        const targetScore = Math.ceil(next.pct * this.maxPossibleScore);
+        const needed = Math.max(1, targetScore - score);
+        nextInfo.textContent = `${needed} pt${needed === 1 ? "" : "s"} to ${next.title}`;
+      } else {
+        nextInfo.textContent = "Button Master reached!";
+      }
+
+      this.renderRankDots();
+    }
+
+    renderRankDots() {
+      const pState = this.storage.getPuzzleState(this.activePuzzle.id);
+      const score = pState.score || 0;
+      const ratio = this.maxPossibleScore > 0 ? score / this.maxPossibleScore : 0;
+      const container = document.getElementById("rank-dots-container");
+      container.innerHTML = "";
+
+      RANKS.forEach((rank) => {
+        const dot = document.createElement("div");
+        dot.className = "rank-dot" + (ratio >= rank.pct ? " reached" : "");
+        container.appendChild(dot);
+      });
+    }
+
+    /* ==========================================================================
+       MENU & VAULT RENDERING
+       ========================================================================== */
+    renderMenu() {
+      const { puzzle, dayIndex } = this.scheduler.getTodayPuzzle();
+      if (!puzzle) return;
+
+      const pState = this.storage.getPuzzleState(puzzle.id);
+      const score = pState.score || 0;
+
+      const maxPts = puzzle.acceptedWords.reduce((acc, w) => acc + this.getWordPoints(w), 0);
+      const ratio = maxPts > 0 ? score / maxPts : 0;
+      let rankTitle = "Beginner";
+      for (const r of RANKS) {
+        if (ratio >= r.pct) rankTitle = r.title;
+      }
+
+      document.getElementById("menu-today-date").textContent = this.scheduler.formatDateForDay(dayIndex);
+      document.getElementById("mini-center-letter").textContent = puzzle.centerLetter;
+      document.getElementById("menu-rank-name").textContent = rankTitle;
+      document.getElementById("menu-score-display").textContent = `${score} pts`;
+
+      const orbit = document.getElementById("mini-letters-orbit");
+      orbit.innerHTML = "";
+      puzzle.outerLetters.forEach((letter) => {
+        const sp = document.createElement("span");
+        sp.textContent = letter;
+        orbit.appendChild(sp);
+      });
+
+      const btnPlayText = document.getElementById("btn-play-text");
+      if (score > 0) {
+        btnPlayText.textContent = "Continue Today's Game";
+      } else {
+        btnPlayText.textContent = "Play Today's Game";
+      }
+
+      const vaultPuzzles = this.scheduler.getReleasedVaultPuzzles();
+      document.getElementById("vault-count-badge").textContent = `${vaultPuzzles.length} Available`;
+    }
+
+    renderVault() {
+      const container = document.getElementById("vault-items-container");
+      container.innerHTML = "";
+      const vaultItems = this.scheduler.getReleasedVaultPuzzles();
+
+      if (vaultItems.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 24px; color: var(--text-secondary);">
+            <p style="font-weight: 750; font-size: 1rem; color: var(--ink-dark-deep);">The Vault opens tomorrow.</p>
+            <p style="font-size: 0.82rem; margin-top: 6px; color: var(--ink-dark-muted);">Day 0 is active. Previous puzzles appear here as they are released.</p>
+          </div>
+        `;
+        return;
+      }
+
+      vaultItems.forEach((item) => {
+        const pState = this.storage.getPuzzleState(item.puzzle.id);
+        const card = document.createElement("div");
+        card.className = "vault-item-card";
+
+        card.innerHTML = `
+          <div class="vault-info-col">
+            <span class="vault-day-tag">Day ${item.dayIndex}</span>
+            <span class="vault-date-title">${item.dateLabel}</span>
+          </div>
+          <div class="vault-status-col">
+            <span class="vault-score-badge">${pState.score || 0} pts</span>
+            ${pState.completed ? '<span class="vault-completed-mark" title="Completed">★</span>' : ""}
+          </div>
+        `;
+
+        card.addEventListener("click", () => {
+          this.sound.playLetter();
+          document.getElementById("modal-vault").classList.remove("active");
+          document.getElementById("modal-vault").setAttribute("aria-hidden", "true");
+          this.loadPuzzle(item.puzzle, item.dayIndex, true);
+          this.showScreen("game");
+        });
+
+        container.appendChild(card);
+      });
+    }
+
+    renderFoundWordsModal() {
+      const pState = this.storage.getPuzzleState(this.activePuzzle.id);
+      const list = document.getElementById("found-words-list");
+      const sub = document.getElementById("words-modal-sub");
+      list.innerHTML = "";
+
+      const words = [...pState.foundWords].sort();
+      sub.textContent = `You have found ${words.length} word${words.length === 1 ? "" : "s"}`;
+
+      if (words.length === 0) {
+        list.innerHTML = '<li style="color: var(--text-muted); font-size: 0.85rem;">No words found yet. Start typing or tapping stones!</li>';
+        return;
+      }
+
+      words.forEach((w) => {
+        const li = document.createElement("li");
+        li.className = "word-chip" + (this.isPangram(w) ? " pangram" : "");
+        li.textContent = w;
+        list.appendChild(li);
+      });
+    }
+
+    renderStats() {
+      const stats = this.storage.state.stats;
+      document.getElementById("stat-played").textContent = stats.played || 0;
+      document.getElementById("stat-genius").textContent = stats.geniusCount || 0;
+      document.getElementById("stat-streak").textContent = stats.currentStreak || 0;
+      document.getElementById("stat-best-streak").textContent = stats.bestStreak || 0;
+      document.getElementById("stat-total-words").textContent = stats.totalWords || 0;
+      document.getElementById("stat-total-pangrams").textContent = stats.totalPangrams || 0;
+    }
+
+    checkMidnightRollover() {
+      const currentDay = this.scheduler.getCurrentDayIndex();
+      if (!this.isVaultPuzzle && currentDay !== this.activeDayIndex) {
+        if (this.screenMenu.classList.contains("active")) {
+          this.renderMenu();
+        }
+      }
+    }
+  }
+
+  // Application Entry Point
+  window.addEventListener("DOMContentLoaded", () => {
+    new SpellingBeeApp();
+  });
+})();

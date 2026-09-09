@@ -3,278 +3,391 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>SPELLING BEE — Daily Word Game</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@700;800;900&family=Space+Grotesk:wght@500;600;700&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+  <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#EAF7FC">
+  <meta name="description" content="Curling Puzzles — Spelling Bee. Daily curling-inspired word challenge on ice.">
+  <title>Spelling Bee — Curling Puzzles</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="sheet-house-backdrop" aria-hidden="true">
-    <div class="house-ring ring-12ft"></div>
-    <div class="house-ring ring-8ft"></div>
-    <div class="house-ring ring-4ft"></div>
-    <div class="house-button"></div>
-    <div class="tee-line"></div>
-    <div class="center-line"></div>
-    <div class="ice-sheen"></div>
-  </div>
+  <!-- Ambient Interactive Curling Sheet Canvas -->
+  <canvas id="bg-canvas" aria-hidden="true"></canvas>
 
-  <div id="app-root" class="app-viewport">
-    <div id="toast-container" class="toast-shelf" aria-live="polite"></div>
-
-    <section id="screen-menu" class="game-screen active" aria-labelledby="menu-brand-title">
-      <header class="menu-hero">
-        <div class="badge-curling">
-          <svg class="curling-stone-icon mini" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="12 2 2 7 12 12 22 7 12 2" />
-            <polyline points="2 17 12 22 22 17" />
-            <polyline points="2 12 12 17 22 12" />
+  <div id="app-container">
+    <!-- ========================================== -->
+    <!-- 1. MAIN MENU SCREEN                        -->
+    <!-- ========================================== -->
+    <section id="screen-menu" class="app-screen active" aria-label="Main Menu">
+      <header class="menu-header">
+        <div class="brand-pill">
+          <svg class="brand-leaf-icon" viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
+            <path d="M12 2L13.5 7.5L18 5L16.5 10.5L22 12L16.5 13.5L18 19L13.5 16.5L12 22L10.5 16.5L6 19L7.5 13.5L2 12L7.5 10.5L6 5L10.5 7.5L12 2Z"/>
           </svg>
-          <span>DAILY WORD PUZZLE</span>
+          <span>Curling Puzzles</span>
         </div>
-        <h1 id="menu-brand-title" class="brand-title">
-          <span class="ice-word">SPELLING</span>
-          <span class="red-word">BEE</span>
-        </h1>
-        <p class="brand-subtitle">Seven Letters • Endless Words</p>
+        <h1 class="game-title">Spelling Bee</h1>
+        <p class="menu-tagline">Form words with the sheet letters. Center stone required.</p>
       </header>
 
-      <main class="menu-actions">
-        <button id="btn-play-daily" class="brutal-btn btn-hero" aria-label="Play today's puzzle">
-          <div class="btn-content">
-            <div class="stone-avatar-badge">🐝</div>
-            <div class="btn-text-group">
-              <span class="btn-primary-text">TODAY'S PUZZLE</span>
-              <span id="daily-puzzle-status" class="btn-subtext">Loading puzzle...</span>
+      <main class="menu-content">
+        <!-- Hero Today Card -->
+        <article class="glass-card hero-today-card" id="today-hero-card">
+          <div class="card-glow-edge"></div>
+          <div class="today-badge-row">
+            <span class="status-badge" id="menu-today-badge">Today</span>
+            <span class="date-label" id="menu-today-date">September 8, 2026</span>
+          </div>
+
+          <div class="today-preview-visual" aria-hidden="true">
+            <div class="mini-house">
+              <div class="mini-outer-blue"></div>
+              <div class="mini-inner-red"></div>
+              <div class="mini-button-center" id="mini-center-letter">S</div>
+            </div>
+            <div class="mini-letters-orbit" id="mini-letters-orbit">
+              <span>W</span><span>E</span><span>P</span><span>T</span><span>O</span><span>N</span>
             </div>
           </div>
-          <span class="btn-arrow-badge" aria-hidden="true">→</span>
-        </button>
 
-        <button id="btn-open-vault" class="brutal-btn btn-vault" aria-label="Open puzzle archive">
-          <div class="btn-content">
-            <div class="stone-avatar-badge glass-icon">📚</div>
-            <div class="btn-text-group">
-              <span class="btn-primary-text">ARCHIVE</span>
-              <span id="vault-count-badge" class="btn-subtext">Past Puzzles</span>
+          <div class="today-status-info">
+            <div class="today-progress-stats">
+              <span class="label">Rank</span>
+              <span class="value" id="menu-rank-name">Beginner</span>
+            </div>
+            <div class="today-score-stats">
+              <span class="label">Score</span>
+              <span class="value" id="menu-score-display">0 pts</span>
             </div>
           </div>
-          <span class="btn-arrow-badge" aria-hidden="true">→</span>
-        </button>
 
-        <div class="menu-utility-grid">
-          <button id="btn-open-stats" class="brutal-btn btn-utility" aria-label="View statistics">
-            <span class="btn-icon">📊</span>
-            <span>STATISTICS</span>
+          <button id="btn-play-today" type="button" class="btn btn-primary btn-play">
+            <span class="btn-text" id="btn-play-text">Play Today's Game</span>
+            <svg class="btn-arrow" viewBox="0 0 20 20" fill="currentColor" width="18" height="18" aria-hidden="true">
+              <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd"/>
+            </svg>
           </button>
-          <button id="btn-open-rules" class="brutal-btn btn-utility" aria-label="View how to play and settings">
-            <span class="btn-icon">📖</span>
-            <span>HOW TO PLAY</span>
+        </article>
+
+        <!-- Secondary Platform Navigation -->
+        <nav class="menu-nav-group" aria-label="Game Navigation">
+          <button id="btn-open-vault" type="button" class="btn btn-secondary nav-btn">
+            <svg class="nav-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="4" width="18" height="16" rx="3"></rect>
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M12 9v1m0 4v1m-3-3h1m4 0h1"></path>
+            </svg>
+            <span class="nav-title">Vault</span>
+            <span class="nav-badge" id="vault-count-badge">0 Puzzles</span>
           </button>
-          <a class="brutal-btn btn-utility btn-home" href="https://tileworksgamesstudio.github.io/Curling-Menu/" aria-label="Return to home menu">
-            <span class="btn-icon">⌂</span>
-            <span>HOME</span>
+
+          <a id="btn-home-portal" class="btn btn-secondary nav-btn" href="https://tileworksgamesstudio.github.io/Curling-Menu/" target="_self" rel="noopener">
+            <svg class="nav-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+            <span class="nav-title">Home</span>
+            <span class="nav-sub">Curling Menu</span>
           </a>
-        </div>
+
+          <div class="menu-sub-row">
+            <button id="btn-menu-stats" type="button" class="btn btn-tertiary">
+              <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M18 20V10M12 20V4M6 20v-6"></path>
+              </svg>
+              <span>Stats</span>
+            </button>
+            <button id="btn-menu-help" type="button" class="btn btn-tertiary">
+              <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+              <span>Help</span>
+            </button>
+            <button id="btn-sound-toggle" type="button" class="btn btn-tertiary" aria-pressed="true" aria-label="Toggle Sound">
+              <svg id="sound-icon-on" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+              </svg>
+              <svg id="sound-icon-off" class="hidden" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                <line x1="23" y1="9" x2="17" y2="15"></line>
+                <line x1="17" y1="9" x2="23" y2="15"></line>
+              </svg>
+              <span id="sound-status-text">Sound: ON</span>
+            </button>
+          </div>
+        </nav>
       </main>
 
       <footer class="menu-footer">
-        <div class="footer-tag">
-          <span class="tag-dot"></span>
-          <span>CENTER LETTER REQUIRED IN EVERY WORD</span>
-        </div>
+        <span class="curling-rink-line" aria-hidden="true"></span>
+        <p class="copyright-note">Curling Puzzles Platform &copy; 2026</p>
       </footer>
     </section>
 
-    <section id="screen-game" class="game-screen" aria-label="Active puzzle screen">
+    <!-- ========================================== -->
+    <!-- 2. GAME SCREEN (ACTIVE PLAY)               -->
+    <!-- ========================================== -->
+    <section id="screen-game" class="app-screen" aria-label="Game Board">
+      <!-- Compact Top Bar -->
       <header class="game-header">
-        <button id="btn-game-back" class="brutal-icon-btn" aria-label="Back to main menu">
-          <span aria-hidden="true">←</span>
+        <button id="btn-game-back" type="button" class="btn-icon" aria-label="Back to Menu">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
         </button>
-        
-        <div class="puzzle-indicator">
-          <span id="game-puzzle-badge" class="pill-badge">DAILY PUZZLE</span>
-          <span id="game-puzzle-name" class="puzzle-name-label">Puzzle #1</span>
+
+        <div class="game-header-center">
+          <span class="game-badge-type" id="game-active-label">Today</span>
+          <span class="game-active-date" id="game-active-date">Sept 8, 2026</span>
         </div>
 
-        <button id="btn-toggle-words" class="brutal-chip-btn" aria-label="View found words list">
-          <span class="chip-label">WORDS:</span>
-          <strong id="game-found-count">0</strong>
-        </button>
+        <div class="game-header-actions">
+          <button id="btn-game-words-toggle" type="button" class="btn-pill-compact" aria-label="View found words">
+            <span id="game-words-counter">0 words</span>
+          </button>
+          <button id="btn-game-help" type="button" class="btn-icon" aria-label="Rules">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+          </button>
+        </div>
       </header>
 
-      <div class="rank-strip" role="region" aria-label="Current rank and score">
-        <div class="rank-header-row">
-          <div class="rank-meta-wrap">
-            <span class="rank-label-caption">RANK</span>
-            <span id="rank-name" class="rank-badge">BEGINNER</span>
+      <!-- Progress Meter & Curling Rank Tracker -->
+      <div class="game-rank-meter" id="rank-meter-bar" aria-label="Curling Rank Progress">
+        <div class="rank-label-row">
+          <div class="rank-name-wrap">
+            <span class="rank-badge" id="current-rank-label">Beginner</span>
           </div>
-          <div class="score-meta-wrap">
-            <span class="points-badge"><strong id="rank-score">0</strong> PTS</span>
+          <div class="score-progress-wrap">
+            <span class="score-number" id="current-score-label">0</span>
+            <span class="score-sub">pts</span>
           </div>
         </div>
-        <div class="progress-track" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-          <div id="progress-fill" class="progress-bar-fill">
-            <div class="progress-gloss"></div>
-          </div>
-          <div class="milestone-dots" id="rank-milestones" aria-hidden="true"></div>
+        <div class="progress-track" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="progress-track">
+          <div class="progress-fill" id="progress-fill-bar"></div>
+          <div class="rank-dots" id="rank-dots-container" aria-hidden="true"></div>
+        </div>
+        <div class="next-rank-text" id="next-rank-info">5 points to Lead</div>
+      </div>
+
+      <!-- Live Notification Toast -->
+      <div id="toast-message" class="toast-popup" role="status" aria-live="polite"></div>
+
+      <!-- Current Word Input Surface -->
+      <div class="word-input-container">
+        <div id="current-word-display" class="current-word-display" aria-label="Current Word" aria-live="polite">
+          <span class="cursor" aria-hidden="true">|</span>
         </div>
       </div>
 
-      <div class="input-display-container">
-        <div id="word-input-display" class="word-input-field" aria-live="polite">
-          <span class="input-placeholder">TYPE OR TAP LETTERS</span>
+      <!-- The Curling House / Honeycomb Board Hero -->
+      <main class="honeycomb-hero-area" aria-label="Letter Selection Honeycomb">
+        <div class="house-rings-bg" aria-hidden="true">
+          <div class="sheet-ring ring-12ft"></div>
+          <div class="sheet-ring ring-8ft"></div>
+          <div class="sheet-ring ring-4ft"></div>
+          <div class="sheet-ring button-target"></div>
+          <div class="sheet-line center-line"></div>
+          <div class="sheet-line tee-line"></div>
         </div>
-      </div>
 
-      <div class="hive-stage">
-        <div class="hive-cluster" id="hive-cluster" role="group" aria-label="Letter keyboard"></div>
-      </div>
+        <div class="honeycomb-grid" id="honeycomb-grid">
+          <!-- Top outer stone -->
+          <button type="button" class="honey-cell cell-outer" data-pos="0" id="cell-0" aria-label="Letter W">
+            <span class="cell-inner"><span class="letter-char">W</span></span>
+          </button>
+          <!-- Top right outer stone -->
+          <button type="button" class="honey-cell cell-outer" data-pos="1" id="cell-1" aria-label="Letter E">
+            <span class="cell-inner"><span class="letter-char">E</span></span>
+          </button>
+          <!-- Bottom right outer stone -->
+          <button type="button" class="honey-cell cell-outer" data-pos="2" id="cell-2" aria-label="Letter P">
+            <span class="cell-inner"><span class="letter-char">P</span></span>
+          </button>
+          <!-- Bottom outer stone -->
+          <button type="button" class="honey-cell cell-outer" data-pos="3" id="cell-3" aria-label="Letter T">
+            <span class="cell-inner"><span class="letter-char">T</span></span>
+          </button>
+          <!-- Bottom left outer stone -->
+          <button type="button" class="honey-cell cell-outer" data-pos="4" id="cell-4" aria-label="Letter O">
+            <span class="cell-inner"><span class="letter-char">O</span></span>
+          </button>
+          <!-- Top left outer stone -->
+          <button type="button" class="honey-cell cell-outer" data-pos="5" id="cell-5" aria-label="Letter N">
+            <span class="cell-inner"><span class="letter-char">N</span></span>
+          </button>
+          <!-- Center Button stone (Mandatory) -->
+          <button type="button" class="honey-cell cell-center" id="cell-center" aria-label="Center letter S, mandatory">
+            <span class="cell-inner"><span class="letter-char" id="center-char">S</span></span>
+          </button>
+        </div>
+      </main>
 
-      <div class="hive-controls">
-        <button id="btn-action-delete" class="brutal-action-btn btn-action-delete" aria-label="Delete last letter">
-          <span>DELETE</span>
+      <!-- Action Keypad -->
+      <footer class="game-action-controls">
+        <button id="btn-action-delete" type="button" class="btn btn-control" aria-label="Delete last letter">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path>
+            <line x1="18" y1="9" x2="12" y2="15"></line>
+            <line x1="12" y1="9" x2="18" y2="15"></line>
+          </svg>
+          <span>Delete</span>
         </button>
-        <button id="btn-action-shuffle" class="brutal-action-btn btn-action-shuffle" aria-label="Shuffle outer letters">
-          <span class="shuffle-glyph" aria-hidden="true">⟳</span>
+
+        <button id="btn-action-shuffle" type="button" class="btn btn-control btn-shuffle" aria-label="Shuffle outer letters">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="16 3 21 3 21 8"></polyline>
+            <line x1="4" y1="20" x2="21" y2="3"></line>
+            <polyline points="21 16 21 21 16 21"></polyline>
+            <line x1="15" y1="15" x2="21" y2="21"></line>
+            <line x1="4" y1="4" x2="9" y2="9"></line>
+          </svg>
+          <span>Shuffle</span>
         </button>
-        <button id="btn-action-enter" class="brutal-action-btn btn-action-enter" aria-label="Submit word">
-          <span>ENTER ↵</span>
+
+        <button id="btn-action-enter" type="button" class="btn btn-control btn-enter" aria-label="Submit word">
+          <span>Enter</span>
+          <svg viewBox="0 0 20 20" width="18" height="18" fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+          </svg>
         </button>
-      </div>
+      </footer>
     </section>
 
-    <section id="screen-vault" class="game-screen" aria-label="Archive screen">
-      <header class="game-header">
-        <button id="btn-vault-back" class="brutal-icon-btn" aria-label="Back to main menu">
-          <span aria-hidden="true">←</span>
-        </button>
-        <div class="vault-title-wrap">
-          <h2 class="screen-title">ARCHIVE</h2>
-          <span class="screen-subtitle">PAST PUZZLES</span>
-        </div>
-        <button id="btn-vault-stats" class="brutal-icon-btn small" aria-label="View statistics">
-          <span>📊</span>
-        </button>
-      </header>
+    <!-- ========================================== -->
+    <!-- 3. MODALS & DRAWERS                        -->
+    <!-- ========================================== -->
 
-      <div class="vault-scroll-content">
-        <div class="vault-intro-card brutal-box">
-          <div class="vault-card-heading">
-            <span class="vault-icon">📚</span>
-            <h3>PUZZLE ARCHIVE</h3>
+    <!-- Found Words Drawer Modal -->
+    <div id="modal-words" class="app-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="words-modal-title">
+      <div class="modal-backdrop" id="words-modal-backdrop"></div>
+      <div class="modal-dialog glass-card">
+        <header class="modal-header">
+          <div>
+            <h2 id="words-modal-title" class="modal-heading">Found Words</h2>
+            <p class="modal-sub" id="words-modal-sub">You have found 0 words</p>
           </div>
-          <p>Play or replay puzzles from previous days. Your scores, ranks, and found words are saved automatically.</p>
+          <button type="button" class="btn-icon btn-modal-close" id="btn-close-words" aria-label="Close found words">
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.2" fill="none" aria-hidden="true">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </header>
+        <div class="modal-body words-list-body">
+          <ul id="found-words-list" class="found-words-chips">
+            <!-- Dynamically populated with found words -->
+          </ul>
         </div>
-
-        <div id="vault-puzzles-list" class="vault-grid"></div>
       </div>
-    </section>
+    </div>
 
-    <div id="modal-words" class="brutal-modal-scrim" aria-hidden="true" role="dialog" aria-modal="true">
-      <div class="brutal-modal-box">
-        <div class="modal-header">
-          <div class="modal-title-group">
-            <h3 id="words-modal-title">FOUND WORDS (0)</h3>
-            <span class="modal-subtitle">WORDS FOUND IN THIS PUZZLE</span>
+    <!-- Vault Modal -->
+    <div id="modal-vault" class="app-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="vault-modal-title">
+      <div class="modal-backdrop" id="vault-modal-backdrop"></div>
+      <div class="modal-dialog glass-card">
+        <header class="modal-header">
+          <div>
+            <h2 id="vault-modal-title" class="modal-heading">Puzzle Vault</h2>
+            <p class="modal-sub">Archives of released daily games</p>
           </div>
-          <button id="btn-close-words" class="brutal-icon-btn small" aria-label="Close found words modal">✕</button>
+          <button type="button" class="btn-icon btn-modal-close" id="btn-close-vault" aria-label="Close Vault">
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.2" fill="none" aria-hidden="true">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </header>
+        <div class="modal-body vault-scroll-body">
+          <div id="vault-items-container" class="vault-grid">
+            <!-- Vault cards dynamically injected -->
+          </div>
         </div>
+      </div>
+    </div>
+
+    <!-- Stats Modal -->
+    <div id="modal-stats" class="app-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="stats-modal-title">
+      <div class="modal-backdrop" id="stats-modal-backdrop"></div>
+      <div class="modal-dialog glass-card">
+        <header class="modal-header">
+          <h2 id="stats-modal-title" class="modal-heading">Statistics</h2>
+          <button type="button" class="btn-icon btn-modal-close" id="btn-close-stats" aria-label="Close Statistics">
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.2" fill="none" aria-hidden="true">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </header>
         <div class="modal-body">
-          <div id="found-words-tagcloud" class="words-tagcloud"></div>
-        </div>
-      </div>
-    </div>
-
-    <div id="modal-stats" class="brutal-modal-scrim" aria-hidden="true" role="dialog" aria-modal="true">
-      <div class="brutal-modal-box">
-        <div class="modal-header">
-          <div class="modal-title-group">
-            <h3>STATISTICS</h3>
-            <span class="modal-subtitle">YOUR GAMEPLAY STATS</span>
-          </div>
-          <button id="btn-close-stats" class="brutal-icon-btn small" aria-label="Close statistics modal">✕</button>
-        </div>
-        <div class="modal-body">
-          <div class="stats-metric-grid">
-            <div class="stat-card">
-              <span id="stat-streak" class="stat-value">0</span>
-              <span class="stat-label">CURRENT STREAK</span>
+          <div class="stats-grid">
+            <div class="stat-box">
+              <span class="stat-num" id="stat-played">0</span>
+              <span class="stat-lbl">Played</span>
             </div>
-            <div class="stat-card">
-              <span id="stat-max-streak" class="stat-value">0</span>
-              <span class="stat-label">BEST STREAK</span>
+            <div class="stat-box">
+              <span class="stat-num" id="stat-genius">0</span>
+              <span class="stat-lbl">Genius</span>
             </div>
-            <div class="stat-card">
-              <span id="stat-words-found" class="stat-value">0</span>
-              <span class="stat-label">WORDS FOUND</span>
+            <div class="stat-box">
+              <span class="stat-num" id="stat-streak">0</span>
+              <span class="stat-lbl">Streak</span>
             </div>
-            <div class="stat-card">
-              <span id="stat-total-points" class="stat-value">0</span>
-              <span class="stat-label">TOTAL POINTS</span>
-            </div>
-            <div class="stat-card">
-              <span id="stat-pangrams" class="stat-value">0</span>
-              <span class="stat-label">PANGRAMS</span>
-            </div>
-            <div class="stat-card">
-              <span id="stat-ends-cleared" class="stat-value">0</span>
-              <span class="stat-label">COMPLETED</span>
+            <div class="stat-box">
+              <span class="stat-num" id="stat-best-streak">0</span>
+              <span class="stat-lbl">Max Streak</span>
             </div>
           </div>
-
-          <div class="share-box brutal-box-inset">
-            <div class="share-info">
-              <strong>SHARE TODAY'S SCORE</strong>
-              <p>Copy your score and rank to share with friends.</p>
+          <div class="stat-extra-row">
+            <div class="stat-detail-item">
+              <span class="label">Total Words Found:</span>
+              <strong id="stat-total-words">0</strong>
             </div>
-            <button id="btn-share-result" class="brutal-btn btn-share">
-              <span>📋 COPY RESULT</span>
-            </button>
+            <div class="stat-detail-item">
+              <span class="label">Total Pangrams:</span>
+              <strong id="stat-total-pangrams">0</strong>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <div id="modal-settings" class="brutal-modal-scrim" aria-hidden="true" role="dialog" aria-modal="true">
-      <div class="brutal-modal-box">
-        <div class="modal-header">
-          <div class="modal-title-group">
-            <h3>HOW TO PLAY</h3>
-            <span class="modal-subtitle">RULES & SETTINGS</span>
+    <!-- How to Play Modal -->
+    <div id="modal-help" class="app-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="help-modal-title">
+      <div class="modal-backdrop" id="help-modal-backdrop"></div>
+      <div class="modal-dialog glass-card">
+        <header class="modal-header">
+          <h2 id="help-modal-title" class="modal-heading">How to Play</h2>
+          <button type="button" class="btn-icon btn-modal-close" id="btn-close-help" aria-label="Close Guide">
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.2" fill="none" aria-hidden="true">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </header>
+        <div class="modal-body rules-content">
+          <ul class="rule-bullets">
+            <li>Words must have at least <strong>4 letters</strong>.</li>
+            <li>Words must include the <strong>center stone letter</strong>.</li>
+            <li>Letters can be <strong>used more than once</strong>.</li>
+            <li>Words are scored: 4-letter words = 1 pt. Longer words = 1 pt per letter.</li>
+            <li><strong>Pangrams</strong> use all 7 letters at least once and award <strong>+7 bonus points</strong>!</li>
+          </ul>
+          <div class="rink-tip-box">
+            <strong>Rink Strategy:</strong> As you earn points, your Curling Rank increases from Beginner up to Skip and Button Master!
           </div>
-          <button id="btn-close-settings" class="brutal-icon-btn small" aria-label="Close modal">✕</button>
-        </div>
-        <div class="modal-body settings-scroll">
-          <div class="rules-section brutal-box-inset">
-            <h4>RULES OF THE GAME</h4>
-            <ul class="rules-list">
-              <li>Words must have <strong>at least 4 letters</strong>.</li>
-              <li>Words <strong>must contain the red center letter</strong>.</li>
-              <li>Letters can be used more than once.</li>
-              <li>4-letter words earn <strong>1 point</strong>.</li>
-              <li>Words with 5 or more letters score <strong>1 point per letter</strong>.</li>
-              <li><strong>Pangrams</strong> use all 7 unique letters and earn a <strong>+7 point bonus</strong>!</li>
-            </ul>
-          </div>
-
-          <div class="settings-group brutal-box-inset">
-            <div class="setting-item">
-              <div class="setting-text">
-                <span class="setting-title">SOUND EFFECTS</span>
-                <span class="setting-desc">Tactile clicks, shuffles, and fanfare</span>
-              </div>
-              <button id="btn-toggle-sound" class="brutal-toggle-btn active" aria-pressed="true">ON</button>
-            </div>
-          </div>
-
-          <button id="btn-reset-data" class="brutal-btn-danger">RESET SAVED PROGRESS</button>
         </div>
       </div>
     </div>
+
   </div>
 
+  <script src="puzzles.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
