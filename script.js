@@ -4,6 +4,7 @@
   // Universal Storage & Application Configuration
   const STORAGE_KEY = 'spelling_bee_save_v2';
   const CSV_PATH = './puzzles.csv';
+  const RELEASE_TIMEZONE = 'America/Toronto'; // Canonical Canadian Championship Release Timezone
   
   // PLACEHOLDER: Replace '#home' with supplied main-page destination URL when provided
   const HOME_URL = 'https://tileworksgamesstudio.github.io/Curling-Menu/';
@@ -48,7 +49,6 @@
 
   /* ==========================================================================
      PRESENTATIONAL LAYER 1: LIGHTWEIGHT HAPTIC WEB-AUDIO SYNTHESIZER
-     (Optional, gesture-unlocked, zero external asset dependencies, fails silently)
      ========================================================================== */
   class RinkAudio {
     constructor() {
@@ -84,7 +84,7 @@
       gain.connect(this.ctx.destination);
 
       switch (type) {
-        case 'letter': // Crisp stone pebble tick
+        case 'letter':
           osc.type = 'triangle';
           osc.frequency.setValueAtTime(520, now);
           osc.frequency.exponentialRampToValueAtTime(840, now + 0.04);
@@ -94,7 +94,7 @@
           osc.stop(now + 0.05);
           break;
 
-        case 'delete': // Muted broom tap
+        case 'delete':
           osc.type = 'sine';
           osc.frequency.setValueAtTime(240, now);
           osc.frequency.exponentialRampToValueAtTime(140, now + 0.05);
@@ -104,7 +104,7 @@
           osc.stop(now + 0.05);
           break;
 
-        case 'shuffle': // Ice brush sweep glide
+        case 'shuffle':
           osc.type = 'sine';
           osc.frequency.setValueAtTime(320, now);
           osc.frequency.exponentialRampToValueAtTime(460, now + 0.07);
@@ -114,29 +114,29 @@
           osc.stop(now + 0.08);
           break;
 
-        case 'success': // Clean scoring chime
+        case 'success':
           osc.type = 'sine';
-          osc.frequency.setValueAtTime(587.33, now); // D5
-          osc.frequency.setValueAtTime(880.00, now + 0.08); // A5
+          osc.frequency.setValueAtTime(587.33, now);
+          osc.frequency.setValueAtTime(880.00, now + 0.08);
           gain.gain.setValueAtTime(0.05, now);
           gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
           osc.start(now);
           osc.stop(now + 0.22);
           break;
 
-        case 'pangram': // Triumphant championship chime
+        case 'pangram':
           osc.type = 'triangle';
-          osc.frequency.setValueAtTime(523.25, now); // C5
-          osc.frequency.setValueAtTime(659.25, now + 0.08); // E5
-          osc.frequency.setValueAtTime(783.99, now + 0.16); // G5
-          osc.frequency.setValueAtTime(1046.50, now + 0.24); // C6
+          osc.frequency.setValueAtTime(523.25, now);
+          osc.frequency.setValueAtTime(659.25, now + 0.08);
+          osc.frequency.setValueAtTime(783.99, now + 0.16);
+          osc.frequency.setValueAtTime(1046.50, now + 0.24);
           gain.gain.setValueAtTime(0.08, now);
           gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
           osc.start(now);
           osc.stop(now + 0.45);
           break;
 
-        case 'error': // Soft restrained low rejection
+        case 'error':
           osc.type = 'sawtooth';
           osc.frequency.setValueAtTime(130, now);
           osc.frequency.exponentialRampToValueAtTime(90, now + 0.12);
@@ -150,8 +150,7 @@
   }
 
   /* ==========================================================================
-     PRESENTATIONAL LAYER 2: 12 CURLING ICONS + AUTHORITATIVE MAPLE LEAF
-     Ambient Background Simulation System (Sections 10-14 & 65.6)
+     PRESENTATIONAL LAYER 2: AMBIENT BACKGROUND SIMULATION
      ========================================================================== */
   class RinkAtmosphere {
     constructor(container) {
@@ -161,35 +160,21 @@
       this.isRunning = true;
       this.supportsMotion = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-      // 12 Visual Curling Icons (SVG template geometry strings)
       this.curlingIconDefs = [
-        // 1. Curling Stone
         '<svg viewBox="0 0 64 64"><ellipse cx="32" cy="40" rx="26" ry="14" fill="#0B1C34"/><ellipse cx="32" cy="38" rx="23" ry="11" fill="#FF2B30"/><path d="M22 28 C22 18, 42 18, 42 28" fill="none" stroke="#FFD83D" stroke-width="4" stroke-linecap="round"/></svg>',
-        // 2. Curling House Rings
         '<svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="none" stroke="#0B1C34" stroke-width="4"/><circle cx="32" cy="32" r="20" fill="none" stroke="#D71920" stroke-width="4"/><circle cx="32" cy="32" r="8" fill="#D71920"/></svg>',
-        // 3. Curling Broom
         '<svg viewBox="0 0 64 64"><line x1="12" y1="52" x2="48" y2="12" stroke="#0B1C34" stroke-width="4" stroke-linecap="round"/><rect x="8" y="46" width="16" height="8" rx="2" transform="rotate(-45 16 50)" fill="#FFD83D"/></svg>',
-        // 4. Brush Head
         '<svg viewBox="0 0 64 64"><rect x="14" y="24" width="36" height="16" rx="4" fill="#FF2B30" stroke="#0B1C34" stroke-width="2"/><line x1="18" y1="44" x2="46" y2="44" stroke="#0B1C34" stroke-width="3"/></svg>',
-        // 5. Hack
         '<svg viewBox="0 0 64 64"><rect x="16" y="26" width="12" height="20" rx="2" fill="#0B1C34"/><rect x="36" y="26" width="12" height="20" rx="2" fill="#0B1C34"/><line x1="8" y1="48" x2="56" y2="48" stroke="#D71920" stroke-width="3"/></svg>',
-        // 6. Curling Stone Handle
         '<svg viewBox="0 0 64 64"><path d="M16 40 L16 26 C16 20, 48 20, 48 26 L48 40" fill="none" stroke="#FFD83D" stroke-width="6" stroke-linecap="round"/></svg>',
-        // 7. Hog Line Marker
         '<svg viewBox="0 0 64 64"><rect x="4" y="28" width="56" height="8" fill="#D71920"/><text x="32" y="35" fill="#FFF" font-size="6" font-weight="900" text-anchor="middle" font-family="sans-serif">HOG</text></svg>',
-        // 8. Back Line
         '<svg viewBox="0 0 64 64"><line x1="4" y1="32" x2="60" y2="32" stroke="#0B1C34" stroke-width="4" stroke-dasharray="6 4"/></svg>',
-        // 9. Centre Line
         '<svg viewBox="0 0 64 64"><line x1="32" y1="4" x2="32" y2="60" stroke="#0B1C34" stroke-width="4"/><circle cx="32" cy="32" r="6" fill="#D71920"/></svg>',
-        // 10. Curling Pebble Texture Motif
         '<svg viewBox="0 0 64 64"><circle cx="16" cy="20" r="4" fill="#0B1C34"/><circle cx="36" cy="14" r="5" fill="#B9D7ED"/><circle cx="48" cy="34" r="4" fill="#D71920"/><circle cx="24" cy="46" r="5" fill="#FFD83D"/></svg>',
-        // 11. Scoreboard / End Marker
         '<svg viewBox="0 0 64 64"><rect x="10" y="14" width="44" height="36" rx="4" fill="#0B1C34"/><text x="32" y="38" fill="#FFD83D" font-size="22" font-weight="900" text-anchor="middle" font-family="sans-serif">8</text></svg>',
-        // 12. Skip / Throwing Position Silhouette
         '<svg viewBox="0 0 64 64"><circle cx="20" cy="22" r="6" fill="#0B1C34"/><path d="M14 46 L24 32 L36 34 L48 44" fill="none" stroke="#0B1C34" stroke-width="4" stroke-linecap="round"/><ellipse cx="44" cy="48" rx="8" ry="4" fill="#FF2B30"/></svg>'
       ];
 
-      // Exact Maple Leaf Geometry from Maple_Leaf_by_Merlin2525.svg (Item 13)
       this.mapleLeafSvg = '<svg viewBox="0 0 298.72 341.12" style="color: #D71920;"><use href="#maple-leaf-symbol" /></svg>';
 
       if (this.supportsMotion && this.container) {
@@ -201,7 +186,6 @@
       const el = document.createElement('div');
       el.className = 'curling-floating-item';
 
-      // 40% chance of authoritative Canadian Maple Leaf, 60% one of the 12 curling icons
       const isLeaf = Math.random() < 0.4;
       if (isLeaf) {
         el.innerHTML = this.mapleLeafSvg;
@@ -210,7 +194,6 @@
         el.innerHTML = this.curlingIconDefs[iconIndex];
       }
 
-      // Assign Depth Level: Distant, Middle, Near (Section 14)
       const depthRoll = Math.random();
       let depthClass = 'depth-distant';
       let speed = 0.35 + Math.random() * 0.4;
@@ -246,7 +229,6 @@
     }
 
     initLoop() {
-      // Seed initial particles at staggered heights
       for (let i = 0; i < this.maxParticles; i++) {
         const p = this.createParticle();
         p.y = Math.random() * window.innerHeight;
@@ -265,7 +247,6 @@
           p.x += p.driftX;
           p.rot += p.rotSpeed;
 
-          // Recycle particle once it floats past the top
           if (p.y < -p.size - 20) {
             p.y = h + p.size + (Math.random() * 40);
             p.x = Math.random() * (w - 60);
@@ -282,19 +263,20 @@
   }
 
   /* ==========================================================================
-     CORE APPLICATION: SPELLING BEE (Preserved Engine Logic)
+     CORE APPLICATION: SPELLING BEE (With Authoritative Release Gates)
      ========================================================================== */
   class SpellingBeeApp {
     constructor() {
       this.puzzles = [];
       this.dailyPuzzle = null;
       this.activePuzzle = null;
+      this.authoritativeToday = null; // Strictly authoritative release date
       this.outerLetters = [];
       this.inputWord = '';
       this.foundWords = [];
       this.score = 0;
       this.maxScore = 0;
-      this.currentView = 'menu'; // 'menu' | 'game' | 'vault'
+      this.currentView = 'menu';
       this.previousView = 'menu';
 
       this.audio = new RinkAudio();
@@ -314,12 +296,10 @@
 
     cacheDom() {
       this.dom = {
-        // Views
         menuView: document.getElementById('menuView'),
         gameView: document.getElementById('gameView'),
         vaultView: document.getElementById('vaultView'),
 
-        // Main Menu Elements
         menuDailyDate: document.getElementById('menuDailyDate'),
         menuDailyStatus: document.getElementById('menuDailyStatus'),
         menuDailyProgressFill: document.getElementById('menuDailyProgressFill'),
@@ -332,7 +312,6 @@
         btnMenuRules: document.getElementById('btnMenuRules'),
         btnMenuStats: document.getElementById('btnMenuStats'),
 
-        // Gameplay Elements
         btnGameBack: document.getElementById('btnGameBack'),
         gamePuzzleTitle: document.getElementById('gamePuzzleTitle'),
         btnGameRules: document.getElementById('btnGameRules'),
@@ -361,12 +340,10 @@
         foundList: document.getElementById('foundList'),
         foundCount: document.getElementById('foundCount'),
 
-        // Vault Elements
         btnVaultBack: document.getElementById('btnVaultBack'),
         vaultHeaderCount: document.getElementById('vaultHeaderCount'),
         vaultGrid: document.getElementById('vaultGrid'),
 
-        // Modals
         modalRules: document.getElementById('modalRules'),
         modalStats: document.getElementById('modalStats'),
         statPlayed: document.getElementById('statPlayed'),
@@ -379,7 +356,6 @@
     }
 
     bindEvents() {
-      // Navigation: Main Menu Card Actions
       this.dom.btnPlayDaily.addEventListener('click', () => {
         this.audio.play('shuffle');
         if (this.dailyPuzzle) {
@@ -394,10 +370,8 @@
         this.switchView('vault');
       });
 
-      // Navigation: Home Action
       this.dom.linkHome.setAttribute('href', HOME_URL);
 
-      // Back Buttons
       this.dom.btnGameBack.addEventListener('click', () => {
         this.audio.play('shuffle');
         this.switchView(this.previousView === 'vault' ? 'vault' : 'menu');
@@ -408,7 +382,6 @@
         this.switchView('menu');
       });
 
-      // Modals
       this.dom.btnMenuRules.addEventListener('click', () => {
         this.audio.play('shuffle');
         this.openModal(this.dom.modalRules);
@@ -443,7 +416,6 @@
         }
       });
 
-      // Found Words Accordion
       this.dom.foundToggle.addEventListener('click', () => {
         this.audio.play('shuffle');
         const isHidden = this.dom.foundListWrap.hidden;
@@ -452,7 +424,6 @@
         this.dom.foundToggleIcon.textContent = isHidden ? '▲' : '▼';
       });
 
-      // Hive Clicks
       this.dom.cellCenter.addEventListener('click', () => {
         if (this.activePuzzle) this.addLetter(this.activePuzzle.centerLetter);
       });
@@ -464,12 +435,10 @@
         });
       });
 
-      // Controls
       this.dom.btnDelete.addEventListener('click', () => this.deleteLetter());
       this.dom.btnShuffle.addEventListener('click', () => this.shuffleLetters());
       this.dom.btnEnter.addEventListener('click', () => this.submitWord());
 
-      // Keyboard Controls
       window.addEventListener('keydown', e => {
         if (e.key === 'Escape') {
           this.closeModal(this.dom.modalRules);
@@ -498,31 +467,82 @@
       });
     }
 
+    /**
+     * Converts a millisecond epoch or Date object into a YYYY-MM-DD date string
+     * in the explicit application release timezone.
+     */
+    getTimezoneCalendarDate(dateObj) {
+      const formatter = new Intl.DateTimeFormat('en-CA', {
+        timeZone: RELEASE_TIMEZONE,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      });
+      return formatter.format(dateObj); // Returns "YYYY-MM-DD"
+    }
+
+    /**
+     * Authoritative initialization: reads HTTP Date response header to establish
+     * server time, avoiding reliance on untrusted client device clock.
+     */
     async init() {
+      let serverDateInstant = null;
+
       try {
-        const res = await fetch(CSV_PATH);
+        // Cache-busted fetch to ensure origin Date response header freshness
+        const res = await fetch(`${CSV_PATH}?_t=${Date.now()}`, { cache: 'no-store' });
         if (!res.ok) throw new Error('Network response not ok');
+
+        // Extract Authoritative Server Time from HTTP Response Header
+        const serverHttpDate = res.headers.get('date');
+        if (serverHttpDate) {
+          const parsedMs = Date.parse(serverHttpDate);
+          if (!isNaN(parsedMs)) {
+            serverDateInstant = new Date(parsedMs);
+          }
+        }
+
         const text = await res.text();
         const parsed = this.parseCSV(text);
         this.puzzles = parsed.length > 0 ? parsed : FALLBACK_PUZZLES;
       } catch (err) {
-        // Safe graceful fallback
         this.puzzles = FALLBACK_PUZZLES;
+      }
+
+      // If server HTTP date is unavailable (e.g. strict local file testing without HTTP headers),
+      // fallback strictly respects safe past releases and never unlocks future content.
+      if (serverDateInstant) {
+        this.authoritativeToday = this.getTimezoneCalendarDate(serverDateInstant);
+      } else {
+        // Fail-closed fallback: anchor to newest released fallback puzzle date to prevent leaks
+        this.authoritativeToday = '2024-05-15';
       }
 
       this.determineDailyPuzzle();
       this.updateMenuDashboard();
     }
 
+    /**
+     * Rule: Only puzzles whose release date is today or earlier may be available.
+     * Future puzzles are strictly blocked from being selected as Daily Puzzle.
+     */
     determineDailyPuzzle() {
-      const today = new Date().toISOString().slice(0, 10);
-      let match = this.puzzles.find(p => p.date === today);
+      // Released puzzles are strictly <= authoritative today
+      const released = this.puzzles
+        .filter(p => p.date <= this.authoritativeToday)
+        .sort((a, b) => a.date.localeCompare(b.date));
 
-      if (!match) {
-        const past = this.puzzles.filter(p => p.date <= today);
-        match = past.length > 0 ? past[past.length - 1] : this.puzzles[0];
+      const match = released.find(p => p.date === this.authoritativeToday);
+
+      if (match) {
+        this.dailyPuzzle = match;
+      } else if (released.length > 0) {
+        // Latest available past puzzle
+        this.dailyPuzzle = released[released.length - 1];
+      } else {
+        // Zero puzzles released yet: use safe earliest fallback to avoid crash
+        this.dailyPuzzle = FALLBACK_PUZZLES[0];
       }
-      this.dailyPuzzle = match;
     }
 
     updateMenuDashboard() {
@@ -538,7 +558,8 @@
       this.dom.menuDailyStatus.textContent = `${rank.name} • ${progress.foundWords.length} words found (${score} pts)`;
       this.dom.menuDailyProgressFill.style.width = `${pct}%`;
 
-      const vaultCount = Math.max(0, this.puzzles.length - 1);
+      // Authoritative Vault count: only past released puzzles strictly before daily puzzle date
+      const vaultCount = this.puzzles.filter(p => p.date < this.dailyPuzzle.date).length;
       this.dom.menuVaultCount.textContent = `${vaultCount} past draw${vaultCount === 1 ? '' : 's'}`;
     }
 
@@ -584,7 +605,15 @@
       return puzzles;
     }
 
+    /**
+     * Absolute Release Guard: Blocks unreleased future puzzles from ever being loaded.
+     */
     loadPuzzle(puzzle) {
+      if (!puzzle || puzzle.date > this.authoritativeToday) {
+        this.showFeedback('Puzzle not yet released', 'error');
+        return;
+      }
+
       this.activePuzzle = puzzle;
       this.outerLetters = [...puzzle.outerLetters];
       this.inputWord = '';
@@ -594,7 +623,6 @@
       this.maxScore = this.calculateMaxScore(puzzle);
       this.score = this.calculateWordsScore(this.foundWords, puzzle);
 
-      // Dedicated Header: Puzzle Title
       const isDaily = this.dailyPuzzle && this.dailyPuzzle.date === puzzle.date;
       this.dom.gamePuzzleTitle.textContent = isDaily 
         ? `Daily Draw • ${this.formatDate(puzzle.date)}`
@@ -621,13 +649,11 @@
     }
 
     renderHive() {
-      // Center letter
       const centerLetterSpan = this.dom.cellCenter.querySelector('.hex-letter');
       centerLetterSpan.textContent = this.activePuzzle.centerLetter;
       this.dom.cellCenter.setAttribute('data-letter', this.activePuzzle.centerLetter);
       this.dom.cellCenter.setAttribute('aria-label', `Center letter ${this.activePuzzle.centerLetter}`);
 
-      // Outer letters
       this.dom.outerCells.forEach((cell, idx) => {
         const letter = this.outerLetters[idx] || '';
         const span = cell.querySelector('.hex-letter');
@@ -786,12 +812,15 @@
       }, 1700);
     }
 
+    /**
+     * The Vault: Strictly displays released past puzzles (puzzle.date < dailyPuzzle.date).
+     * Future puzzles are completely excluded before creating any card or DOM node.
+     */
     renderVault() {
       this.dom.vaultGrid.innerHTML = '';
       
-      // Exclude current daily puzzle from historical vault
       const vaultPuzzles = this.puzzles
-        .filter(p => !this.dailyPuzzle || p.date !== this.dailyPuzzle.date)
+        .filter(p => this.dailyPuzzle && p.date < this.dailyPuzzle.date)
         .sort((a, b) => b.date.localeCompare(a.date));
 
       this.dom.vaultHeaderCount.textContent = vaultPuzzles.length;
@@ -904,7 +933,7 @@
 
     updateStats(pts, isPangram) {
       const stats = this.storage.stats;
-      const today = new Date().toISOString().slice(0, 10);
+      const today = this.authoritativeToday;
 
       stats.words += 1;
       stats.points += pts;
@@ -928,7 +957,7 @@
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(this.storage));
       } catch (e) {
-        // Storage limit protection
+        // Storage quota protection
       }
     }
   }
