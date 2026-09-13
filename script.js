@@ -1,1253 +1,939 @@
-/**
- * CURLING PUZZLES — SPELLING BEE ENGINE
- * Architecture:
- * 1. Ambient Curling Stone Physics & Realistic Granite Material Rendering
- * 2. Deterministic Daily Scheduler (Day 0 = Sept 8, 2026 Eastern Baseline)
- * 3. Web Audio Acoustic Synthesizer (Velocity-sensitive stone clacks, ice sweeps, chimes)
- * 4. Versioned LocalStorage Platform Continuity & Statistics
- * 5. Spelling Bee Core Rules, Keyboard Shortcuts, & Game State Machine
- */
-
 (function () {
-  "use strict";
+  'use strict';
 
-  /* ==========================================================================
-     0. CONFIGURATION & CONSTANTS
-     ========================================================================== */
-  const STORAGE_KEY = "curling_puzzles_spelling_bee_v2";
-  const BASELINE_EPOCH_STR = "2026-09-08T00:00:00-04:00"; // Eastern baseline Day 0
-  const BASELINE_DATE_MS = new Date(BASELINE_EPOCH_STR).getTime();
-  const MS_PER_DAY = 24 * 60 * 60 * 1000;
+  // Universal Storage & Application Configuration
+  const STORAGE_KEY = 'spelling_bee_save_v2';
+  const CSV_PATH = './puzzles.csv';
+  
+  // PLACEHOLDER: Replace '#home' with supplied main-page destination URL when provided
+  const HOME_URL = 'https://tileworksgamesstudio.github.io/Curling-Menu/';
 
-  // Curling Rank Titles & Percentage Thresholds
   const RANKS = [
-    { title: "Beginner", pct: 0.00 },
-    { title: "Lead", pct: 0.05 },
-    { title: "Second", pct: 0.15 },
-    { title: "Third", pct: 0.30 },
-    { title: "Skip", pct: 0.50 },
-    { title: "Shot Maker", pct: 0.70 },
-    { title: "Club Champ", pct: 0.85 },
-    { title: "Button Master", pct: 1.00 }
+    { name: 'Lead', pct: 0 },
+    { name: 'Second', pct: 0.03 },
+    { name: 'Third', pct: 0.08 },
+    { name: 'Vice Skip', pct: 0.16 },
+    { name: 'Skip', pct: 0.26 },
+    { name: 'Club Champ', pct: 0.40 },
+    { name: 'Provincial', pct: 0.55 },
+    { name: 'Brier Contender', pct: 0.70 },
+    { name: 'Canadian Champion', pct: 0.85 },
+    { name: 'Olympic Gold', pct: 1.00 }
+  ];
+
+  // Built-in fallback puzzle dataset (Guarantees zero crashes even without server or CSV)
+  const FALLBACK_PUZZLES = [
+    {
+      date: '2024-05-15',
+      centerLetter: 'T',
+      outerLetters: ['A', 'C', 'E', 'L', 'O', 'P'],
+      words: ['ATOP', 'CATTLE', 'CLATTER', 'COAT', 'COLT', 'COMPACT', 'LOCATE', 'OCTAVE', 'PELT', 'PLATE', 'PLEAT', 'PLOT', 'POLITE', 'PULLPOT', 'TACT', 'TEAPOT', 'TOLL', 'TOTAL', 'TOTE'],
+      pangrams: ['COMPACT', 'LOCATE']
+    },
+    {
+      date: '2024-05-14',
+      centerLetter: 'G',
+      outerLetters: ['A', 'D', 'I', 'N', 'R', 'T'],
+      words: ['AGING', 'DARTING', 'DATING', 'DRAG', 'DRAINING', 'GAIN', 'GANG', 'GIANT', 'GLAD', 'GRAD', 'GRAIN', 'GRANT', 'GRATING', 'GRID', 'GRIN', 'IGNITE', 'RATING', 'TRADING'],
+      pangrams: ['DARTING', 'TRADING']
+    },
+    {
+      date: '2024-05-13',
+      centerLetter: 'H',
+      outerLetters: ['A', 'C', 'K', 'M', 'N', 'T'],
+      words: ['CATHARTIC', 'CHAMP', 'CHANT', 'CHAT', 'HACK', 'HATCH', 'MATCH', 'THANK'],
+      pangrams: ['CHANT']
+    }
   ];
 
   /* ==========================================================================
-     1. SOUND SYNTHESIZER (Web Audio API)
+     PRESENTATIONAL LAYER 1: LIGHTWEIGHT HAPTIC WEB-AUDIO SYNTHESIZER
+     (Optional, gesture-unlocked, zero external asset dependencies, fails silently)
      ========================================================================== */
-  class SoundEngine {
+  class RinkAudio {
     constructor() {
       this.ctx = null;
       this.enabled = true;
     }
 
     init() {
-      if (!this.ctx) {
-        const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        if (AudioCtx) {
-          this.ctx = new AudioCtx();
-        }
-      }
-      if (this.ctx && this.ctx.state === "suspended") {
-        this.ctx.resume();
-      }
-    }
-
-    /**
-     * Authentic curling stone-on-stone contact sound.
-     * High transient impact mode followed by short granite resonance.
-     */
-    playClack(intensity = 0.5) {
-      if (!this.enabled || !this.ctx) return;
+      if (this.ctx) return;
       try {
-        const now = this.ctx.currentTime;
-        const volume = Math.max(0.05, Math.min(0.35, intensity * 0.35));
-
-        // High strike transient
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-
-        osc.type = "sine";
-        osc.frequency.setValueAtTime(460, now);
-        osc.frequency.exponentialRampToValueAtTime(110, now + 0.065);
-
-        gain.gain.setValueAtTime(volume, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.065);
-
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-
-        osc.start(now);
-        osc.stop(now + 0.065);
-      } catch (e) {}
-    }
-
-    playLetter() {
-      if (!this.enabled || !this.ctx) return;
-      try {
-        const now = this.ctx.currentTime;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-
-        osc.type = "sine";
-        osc.frequency.setValueAtTime(560, now);
-        osc.frequency.exponentialRampToValueAtTime(430, now + 0.045);
-
-        gain.gain.setValueAtTime(0.16, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.045);
-
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-
-        osc.start(now);
-        osc.stop(now + 0.045);
-      } catch (e) {}
-    }
-
-    playWordSuccess(isPangram) {
-      if (!this.enabled || !this.ctx) return;
-      try {
-        const now = this.ctx.currentTime;
-        const notes = isPangram ? [523.25, 659.25, 783.99, 1046.50] : [587.33, 783.99];
-        notes.forEach((freq, i) => {
-          const osc = this.ctx.createOscillator();
-          const gain = this.ctx.createGain();
-          const start = now + i * 0.075;
-
-          osc.type = "triangle";
-          osc.frequency.setValueAtTime(freq, start);
-
-          gain.gain.setValueAtTime(0.18, start);
-          gain.gain.exponentialRampToValueAtTime(0.001, start + 0.32);
-
-          osc.connect(gain);
-          gain.connect(this.ctx.destination);
-
-          osc.start(start);
-          osc.stop(start + 0.32);
-        });
-      } catch (e) {}
-    }
-
-    playError() {
-      if (!this.enabled || !this.ctx) return;
-      try {
-        const now = this.ctx.currentTime;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-
-        osc.type = "sawtooth";
-        osc.frequency.setValueAtTime(145, now);
-        osc.frequency.linearRampToValueAtTime(90, now + 0.12);
-
-        gain.gain.setValueAtTime(0.14, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
-
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-
-        osc.start(now);
-        osc.stop(now + 0.12);
-      } catch (e) {}
-    }
-
-    /**
-     * Synthetic sweeping broom whoosh across pebbled ice.
-     */
-    playShuffle() {
-      if (!this.enabled || !this.ctx) return;
-      try {
-        const now = this.ctx.currentTime;
-        const bufferSize = Math.floor(this.ctx.sampleRate * 0.09);
-        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-        const data = buffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) {
-          data[i] = Math.random() * 2 - 1;
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) {
+          this.ctx = new AudioContext();
         }
-
-        const noise = this.ctx.createBufferSource();
-        noise.buffer = buffer;
-
-        const filter = this.ctx.createBiquadFilter();
-        filter.type = "bandpass";
-        filter.frequency.setValueAtTime(850, now);
-        filter.Q.setValueAtTime(2.8, now);
-
-        const gain = this.ctx.createGain();
-        gain.gain.setValueAtTime(0.14, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
-
-        noise.connect(filter);
-        filter.connect(gain);
-        gain.connect(this.ctx.destination);
-
-        noise.start(now);
-      } catch (e) {}
-    }
-  }
-
-  /* ==========================================================================
-     2. AMBIENT CURLING STONE PHYSICS & REALISTIC GRANITE RENDERING
-     ========================================================================== */
-  class BackgroundPhysicsEngine {
-    constructor(canvas, soundEngine) {
-      this.canvas = canvas;
-      this.ctx = canvas.getContext("2d");
-      this.sound = soundEngine;
-      this.rocks = [];
-      this.animId = null;
-      this.lastTime = performance.now();
-      this.accumulator = 0;
-      this.fixedDt = 1000 / 60; // 16.667ms fixed physics timestep
-      this.reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      this.activeGameMode = false;
-      this.nextTakeoutTime = performance.now() + 35000;
-
-      this.resize = this.resize.bind(this);
-      this.loop = this.loop.bind(this);
-      this.init();
-    }
-
-    init() {
-      this.resize();
-      window.addEventListener("resize", this.resize, { passive: true });
-      this.spawnRocks();
-      if (!this.reducedMotion) {
-        this.animId = requestAnimationFrame(this.loop);
-      } else {
-        this.renderStatic();
-      }
-    }
-
-    resize() {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      this.width = window.innerWidth;
-      this.height = window.innerHeight;
-      this.canvas.width = this.width * dpr;
-      this.canvas.height = this.height * dpr;
-      this.ctx.scale(dpr, dpr);
-    }
-
-    createRock(x, y, vx, vy, radius, teamColor, depthScale = 1.0) {
-      // Deterministic procedural granite inclusions/speckles
-      const speckles = [];
-      const count = Math.floor(10 + radius * 0.3);
-      for (let s = 0; s < count; s++) {
-        const ang = Math.random() * Math.PI * 2;
-        const dist = Math.random() * (radius * 0.72);
-        speckles.push({
-          ox: Math.cos(ang) * dist,
-          oy: Math.sin(ang) * dist,
-          r: 0.8 + Math.random() * 1.4,
-          alpha: 0.15 + Math.random() * 0.35,
-          color: Math.random() > 0.4 ? "#263547" : "#E2EEF8"
-        });
-      }
-
-      return {
-        x,
-        y,
-        vx,
-        vy,
-        radius,
-        depthScale,
-        mass: radius * radius,
-        handleColor: teamColor, // '#D63B3B' (Red) or '#F0C647' (Yellow)
-        rotation: Math.random() * Math.PI * 2,
-        vRot: (Math.random() - 0.5) * 0.008,
-        speckles
-      };
-    }
-
-    spawnRocks() {
-      const isMobile = this.width < 500;
-      // Active gameplay view is calmer; Menu screen is richer
-      const count = this.activeGameMode ? (isMobile ? 2 : 3) : (isMobile ? 4 : 6);
-      this.rocks = [];
-
-      for (let i = 0; i < count; i++) {
-        const radius = isMobile ? (22 + Math.random() * 6) : (28 + Math.random() * 8);
-        const depthScale = 0.88 + (radius / 36) * 0.22;
-        let x, y, overlap;
-        let attempts = 0;
-
-        do {
-          overlap = false;
-          x = radius + 20 + Math.random() * (this.width - radius * 2 - 40);
-          y = radius + 20 + Math.random() * (this.height - radius * 2 - 40);
-
-          for (const r of this.rocks) {
-            const dx = x - r.x;
-            const dy = y - r.y;
-            if (Math.hypot(dx, dy) < radius + r.radius + 15) {
-              overlap = true;
-              break;
-            }
-          }
-          attempts++;
-        } while (overlap && attempts < 60);
-
-        const speed = (0.16 + Math.random() * 0.28) * (this.activeGameMode ? 0.6 : 1);
-        const angle = Math.random() * Math.PI * 2;
-        const teamColor = i % 2 === 0 ? "#D63B3B" : "#F0C647";
-
-        this.rocks.push(this.createRock(
-          x,
-          y,
-          Math.cos(angle) * speed,
-          Math.sin(angle) * speed,
-          radius,
-          teamColor,
-          depthScale
-        ));
-      }
-    }
-
-    setGameMode(isGameActive) {
-      this.activeGameMode = isGameActive;
-      this.spawnRocks();
-    }
-
-    /**
-     * Occasional uncommon ambient "takeout shot" event.
-     */
-    triggerAmbientTakeout() {
-      if (this.rocks.length === 0 || this.reducedMotion) return;
-      const radius = this.width < 500 ? 26 : 32;
-      const fromLeft = Math.random() > 0.5;
-      const x = fromLeft ? -radius - 10 : this.width + radius + 10;
-      const y = this.height * 0.25 + Math.random() * (this.height * 0.5);
-
-      const targetX = this.width * 0.5 + (Math.random() - 0.5) * 80;
-      const targetY = this.height * 0.5 + (Math.random() - 0.5) * 80;
-      const angle = Math.atan2(targetY - y, targetX - x);
-      const speed = 1.1 + Math.random() * 0.5;
-
-      const teamColor = Math.random() > 0.5 ? "#D63B3B" : "#F0C647";
-      const takeoutRock = this.createRock(
-        x,
-        y,
-        Math.cos(angle) * speed,
-        Math.sin(angle) * speed,
-        radius,
-        teamColor,
-        1.1
-      );
-
-      this.rocks.push(takeoutRock);
-      if (this.rocks.length > 8) {
-        this.rocks.shift();
-      }
-    }
-
-    resolveCollisions() {
-      const len = this.rocks.length;
-      for (let i = 0; i < len; i++) {
-        for (let j = i + 1; j < len; j++) {
-          const r1 = this.rocks[i];
-          const r2 = this.rocks[j];
-          const dx = r2.x - r1.x;
-          const dy = r2.y - r1.y;
-          const dist = Math.hypot(dx, dy);
-          const minDist = r1.radius + r2.radius;
-
-          if (dist < minDist && dist > 0.001) {
-            const nx = dx / dist;
-            const ny = dy / dist;
-
-            // Anti-penetration separation
-            const overlap = minDist - dist;
-            r1.x -= nx * overlap * 0.5;
-            r1.y -= ny * overlap * 0.5;
-            r2.x += nx * overlap * 0.5;
-            r2.y += ny * overlap * 0.5;
-
-            // Relative velocity
-            const kx = r1.vx - r2.vx;
-            const ky = r1.vy - r2.vy;
-            const velAlongNormal = kx * nx + ky * ny;
-
-            // Resolve only if objects are moving toward each other
-            if (velAlongNormal > 0) {
-              const e = 0.82; // Controlled heavy granite restitution
-              const p = ((1 + e) * velAlongNormal) / (r1.mass + r2.mass);
-
-              r1.vx -= p * r2.mass * nx;
-              r1.vy -= p * r2.mass * ny;
-              r2.vx += p * r1.mass * nx;
-              r2.vy += p * r1.mass * ny;
-
-              // Curl spin transfer
-              const tangentX = -ny;
-              const tangentY = nx;
-              const tangVel = kx * tangentX + ky * tangentY;
-              r1.vRot -= tangVel * 0.0003;
-              r2.vRot += tangVel * 0.0003;
-
-              // Sound impact
-              if (velAlongNormal > 0.15) {
-                this.sound.playClack(Math.min(1, velAlongNormal / 1.8));
-              }
-            }
-          }
-        }
-      }
-    }
-
-    updatePhysics() {
-      for (const r of this.rocks) {
-        r.x += r.vx;
-        r.y += r.vy;
-        r.rotation += r.vRot;
-
-        // Ice friction damping
-        r.vx *= 0.9996;
-        r.vy *= 0.9996;
-        r.vRot *= 0.998;
-
-        // Subtle ambient glide maintenance
-        const speed = Math.hypot(r.vx, r.vy);
-        if (speed < 0.06) {
-          const nudgeAng = Math.random() * Math.PI * 2;
-          r.vx += Math.cos(nudgeAng) * 0.025;
-          r.vy += Math.sin(nudgeAng) * 0.025;
-        }
-
-        // Screen boundary cushions
-        if (r.x - r.radius < 0) {
-          r.x = r.radius;
-          r.vx = Math.abs(r.vx) * 0.88;
-        } else if (r.x + r.radius > this.width) {
-          r.x = this.width - r.radius;
-          r.vx = -Math.abs(r.vx) * 0.88;
-        }
-
-        if (r.y - r.radius < 0) {
-          r.y = r.radius;
-          r.vy = Math.abs(r.vy) * 0.88;
-        } else if (r.y + r.radius > this.height) {
-          r.y = this.height - r.radius;
-          r.vy = -Math.abs(r.vy) * 0.88;
-        }
-      }
-
-      this.resolveCollisions();
-    }
-
-    /**
-     * Authentic curling stone rendering:
-     * - Contact shadow on ice
-     * - Ailsa Craig / Trefor granite body
-     * - Mineral inclusions microtexture
-     * - Striking band and beveled shoulder
-     * - Team colored composite hub
-     * - Gooseneck handle with drop shadow onto the stone
-     */
-    draw() {
-      this.ctx.clearRect(0, 0, this.width, this.height);
-
-      for (const r of this.rocks) {
-        const radius = r.radius;
-        this.ctx.save();
-        this.ctx.translate(r.x, r.y);
-
-        // 1. Soft Contact Shadow directly touching the ice
-        this.ctx.beginPath();
-        this.ctx.ellipse(2.5, 4.5, radius * 1.04, radius * 0.98, 0, 0, Math.PI * 2);
-        this.ctx.fillStyle = "rgba(16, 47, 74, 0.16)";
-        this.ctx.fill();
-
-        // Rotate for stone orientation
-        this.ctx.rotate(r.rotation);
-
-        // 2. Outer Granite Body
-        const graniteGrad = this.ctx.createRadialGradient(-radius * 0.3, -radius * 0.3, 2, 0, 0, radius);
-        graniteGrad.addColorStop(0, "#8EA3B8");
-        graniteGrad.addColorStop(0.35, "#566B82");
-        graniteGrad.addColorStop(0.85, "#304256");
-        graniteGrad.addColorStop(1, "#182635");
-
-        this.ctx.beginPath();
-        this.ctx.arc(0, 0, radius, 0, Math.PI * 2);
-        this.ctx.fillStyle = graniteGrad;
-        this.ctx.fill();
-
-        // 3. Granite Microtexture & Mineral Inclusions
-        for (const sp of r.speckles) {
-          this.ctx.beginPath();
-          this.ctx.arc(sp.ox, sp.oy, sp.r, 0, Math.PI * 2);
-          this.ctx.fillStyle = sp.color;
-          this.ctx.globalAlpha = sp.alpha;
-          this.ctx.fill();
-        }
-        this.ctx.globalAlpha = 1.0;
-
-        // 4. Outer Bevel Rim Highlight & Striking Groove
-        this.ctx.beginPath();
-        this.ctx.arc(0, 0, radius * 0.88, 0, Math.PI * 2);
-        this.ctx.strokeStyle = "rgba(255, 255, 255, 0.28)";
-        this.ctx.lineWidth = 1;
-        this.ctx.stroke();
-
-        this.ctx.beginPath();
-        this.ctx.arc(0, 0, radius * 0.97, 0, Math.PI * 2);
-        this.ctx.strokeStyle = "rgba(16, 47, 74, 0.4)";
-        this.ctx.lineWidth = 1.2;
-        this.ctx.stroke();
-
-        // 5. Central Hub Plate (Composite Team Color)
-        const hubGrad = this.ctx.createRadialGradient(-radius * 0.15, -radius * 0.15, 1, 0, 0, radius * 0.44);
-        if (r.handleColor === "#D63B3B") {
-          hubGrad.addColorStop(0, "#EE6865");
-          hubGrad.addColorStop(1, "#B92E34");
-        } else {
-          hubGrad.addColorStop(0, "#FFE698");
-          hubGrad.addColorStop(1, "#D8AA32");
-        }
-
-        this.ctx.beginPath();
-        this.ctx.arc(0, 0, radius * 0.44, 0, Math.PI * 2);
-        this.ctx.fillStyle = hubGrad;
-        this.ctx.fill();
-        this.ctx.strokeStyle = "rgba(255, 255, 255, 0.65)";
-        this.ctx.lineWidth = 1.2;
-        this.ctx.stroke();
-
-        // 6. Handle Drop Shadow onto the Stone Surface
-        this.ctx.fillStyle = "rgba(16, 47, 74, 0.32)";
-        this.ctx.beginPath();
-        this.ctx.roundRect(-radius * 0.24 + 1.5, -3 + 2.5, radius * 0.48, 6, 3);
-        this.ctx.fill();
-
-        // 7. Raised Gooseneck Handle Grip
-        this.ctx.fillStyle = r.handleColor === "#D63B3B" ? "#D63B3B" : "#F0C647";
-        this.ctx.beginPath();
-        this.ctx.roundRect(-radius * 0.24, -3, radius * 0.48, 6, 3);
-        this.ctx.fill();
-
-        // 8. Handle Spine Highlight
-        this.ctx.fillStyle = "rgba(255, 255, 255, 0.75)";
-        this.ctx.fillRect(-radius * 0.2, -1.2, radius * 0.4, 2);
-
-        // Center Chrome Bolt
-        this.ctx.beginPath();
-        this.ctx.arc(0, 0, 2.2, 0, Math.PI * 2);
-        this.ctx.fillStyle = "#FFFFFF";
-        this.ctx.fill();
-
-        this.ctx.restore();
-      }
-    }
-
-    loop(currentTime) {
-      let frameTime = currentTime - this.lastTime;
-      if (frameTime > 100) frameTime = 100;
-      this.lastTime = currentTime;
-
-      this.accumulator += frameTime;
-      while (this.accumulator >= this.fixedDt) {
-        this.updatePhysics();
-        this.accumulator -= this.fixedDt;
-      }
-
-      if (currentTime > this.nextTakeoutTime) {
-        this.triggerAmbientTakeout();
-        this.nextTakeoutTime = currentTime + 32000 + Math.random() * 20000;
-      }
-
-      this.draw();
-      this.animId = requestAnimationFrame(this.loop);
-    }
-
-    renderStatic() {
-      this.draw();
-    }
-  }
-
-  /* ==========================================================================
-     3. PERSISTENCE & CONTINUITY ENGINE
-     ========================================================================== */
-  class StorageEngine {
-    constructor() {
-      this.state = this.load();
-    }
-
-    getInitialState() {
-      return {
-        version: 2,
-        soundEnabled: true,
-        stats: {
-          played: 0,
-          geniusCount: 0,
-          currentStreak: 0,
-          bestStreak: 0,
-          totalWords: 0,
-          totalPangrams: 0,
-          lastPlayedDayIndex: null
-        },
-        puzzleProgress: {}
-      };
-    }
-
-    load() {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) return this.getInitialState();
-        const data = JSON.parse(raw);
-        if (!data.version || data.version < 2) {
-          const initial = this.getInitialState();
-          initial.soundEnabled = data.soundEnabled !== false;
-          return initial;
-        }
-        return data;
       } catch (e) {
-        return this.getInitialState();
+        this.enabled = false;
       }
     }
 
-    save() {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state));
-      } catch (e) {}
-    }
+    play(type) {
+      if (!this.enabled) return;
+      this.init();
+      if (!this.ctx) return;
 
-    getPuzzleState(puzzleId) {
-      if (!this.state.puzzleProgress[puzzleId]) {
-        this.state.puzzleProgress[puzzleId] = {
-          foundWords: [],
-          score: 0,
-          completed: false
-        };
+      if (this.ctx.state === 'suspended') {
+        this.ctx.resume().catch(() => {});
       }
-      return this.state.puzzleProgress[puzzleId];
-    }
 
-    savePuzzleProgress(puzzleId, foundWords, score, isCompleted) {
-      this.state.puzzleProgress[puzzleId] = {
-        foundWords: Array.from(new Set(foundWords)),
-        score,
-        completed: isCompleted
-      };
-      this.save();
-    }
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
 
-    recordWordFound(isPangram) {
-      this.state.stats.totalWords = (this.state.stats.totalWords || 0) + 1;
-      if (isPangram) {
-        this.state.stats.totalPangrams = (this.state.stats.totalPangrams || 0) + 1;
+      switch (type) {
+        case 'letter': // Crisp stone pebble tick
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(520, now);
+          osc.frequency.exponentialRampToValueAtTime(840, now + 0.04);
+          gain.gain.setValueAtTime(0.04, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+          osc.start(now);
+          osc.stop(now + 0.05);
+          break;
+
+        case 'delete': // Muted broom tap
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(240, now);
+          osc.frequency.exponentialRampToValueAtTime(140, now + 0.05);
+          gain.gain.setValueAtTime(0.04, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+          osc.start(now);
+          osc.stop(now + 0.05);
+          break;
+
+        case 'shuffle': // Ice brush sweep glide
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(320, now);
+          osc.frequency.exponentialRampToValueAtTime(460, now + 0.07);
+          gain.gain.setValueAtTime(0.03, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+          osc.start(now);
+          osc.stop(now + 0.08);
+          break;
+
+        case 'success': // Clean scoring chime
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(587.33, now); // D5
+          osc.frequency.setValueAtTime(880.00, now + 0.08); // A5
+          gain.gain.setValueAtTime(0.05, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+          osc.start(now);
+          osc.stop(now + 0.22);
+          break;
+
+        case 'pangram': // Triumphant championship chime
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(523.25, now); // C5
+          osc.frequency.setValueAtTime(659.25, now + 0.08); // E5
+          osc.frequency.setValueAtTime(783.99, now + 0.16); // G5
+          osc.frequency.setValueAtTime(1046.50, now + 0.24); // C6
+          gain.gain.setValueAtTime(0.08, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+          osc.start(now);
+          osc.stop(now + 0.45);
+          break;
+
+        case 'error': // Soft restrained low rejection
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(130, now);
+          osc.frequency.exponentialRampToValueAtTime(90, now + 0.12);
+          gain.gain.setValueAtTime(0.035, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.13);
+          osc.start(now);
+          osc.stop(now + 0.13);
+          break;
       }
-      this.save();
-    }
-
-    recordDailyCompletion(dayIndex, reachedGenius) {
-      const stats = this.state.stats;
-      stats.played = (stats.played || 0) + 1;
-      if (reachedGenius) stats.geniusCount = (stats.geniusCount || 0) + 1;
-
-      if (stats.lastPlayedDayIndex === dayIndex - 1) {
-        stats.currentStreak = (stats.currentStreak || 0) + 1;
-      } else if (stats.lastPlayedDayIndex !== dayIndex) {
-        stats.currentStreak = 1;
-      }
-      stats.bestStreak = Math.max(stats.bestStreak || 0, stats.currentStreak);
-      stats.lastPlayedDayIndex = dayIndex;
-      this.save();
     }
   }
 
   /* ==========================================================================
-     4. DETERMINISTIC DAILY SCHEDULER (Day 0 = Sept 8, 2026)
+     PRESENTATIONAL LAYER 2: 12 CURLING ICONS + AUTHORITATIVE MAPLE LEAF
+     Ambient Background Simulation System (Sections 10-14 & 65.6)
      ========================================================================== */
-  class Scheduler {
-    constructor(puzzles) {
-      this.puzzles = puzzles || [];
-    }
+  class RinkAtmosphere {
+    constructor(container) {
+      this.container = container;
+      this.particles = [];
+      this.maxParticles = window.innerWidth < 600 ? 10 : 16;
+      this.isRunning = true;
+      this.supportsMotion = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    getCurrentDayIndex() {
-      const now = new Date();
-      const diffMs = now.getTime() - BASELINE_DATE_MS;
-      const dayIndex = Math.floor(diffMs / MS_PER_DAY);
-      return Math.max(0, dayIndex);
-    }
+      // 12 Visual Curling Icons (SVG template geometry strings)
+      this.curlingIconDefs = [
+        // 1. Curling Stone
+        '<svg viewBox="0 0 64 64"><ellipse cx="32" cy="40" rx="26" ry="14" fill="#0B1C34"/><ellipse cx="32" cy="38" rx="23" ry="11" fill="#FF2B30"/><path d="M22 28 C22 18, 42 18, 42 28" fill="none" stroke="#FFD83D" stroke-width="4" stroke-linecap="round"/></svg>',
+        // 2. Curling House Rings
+        '<svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="none" stroke="#0B1C34" stroke-width="4"/><circle cx="32" cy="32" r="20" fill="none" stroke="#D71920" stroke-width="4"/><circle cx="32" cy="32" r="8" fill="#D71920"/></svg>',
+        // 3. Curling Broom
+        '<svg viewBox="0 0 64 64"><line x1="12" y1="52" x2="48" y2="12" stroke="#0B1C34" stroke-width="4" stroke-linecap="round"/><rect x="8" y="46" width="16" height="8" rx="2" transform="rotate(-45 16 50)" fill="#FFD83D"/></svg>',
+        // 4. Brush Head
+        '<svg viewBox="0 0 64 64"><rect x="14" y="24" width="36" height="16" rx="4" fill="#FF2B30" stroke="#0B1C34" stroke-width="2"/><line x1="18" y1="44" x2="46" y2="44" stroke="#0B1C34" stroke-width="3"/></svg>',
+        // 5. Hack
+        '<svg viewBox="0 0 64 64"><rect x="16" y="26" width="12" height="20" rx="2" fill="#0B1C34"/><rect x="36" y="26" width="12" height="20" rx="2" fill="#0B1C34"/><line x1="8" y1="48" x2="56" y2="48" stroke="#D71920" stroke-width="3"/></svg>',
+        // 6. Curling Stone Handle
+        '<svg viewBox="0 0 64 64"><path d="M16 40 L16 26 C16 20, 48 20, 48 26 L48 40" fill="none" stroke="#FFD83D" stroke-width="6" stroke-linecap="round"/></svg>',
+        // 7. Hog Line Marker
+        '<svg viewBox="0 0 64 64"><rect x="4" y="28" width="56" height="8" fill="#D71920"/><text x="32" y="35" fill="#FFF" font-size="6" font-weight="900" text-anchor="middle" font-family="sans-serif">HOG</text></svg>',
+        // 8. Back Line
+        '<svg viewBox="0 0 64 64"><line x1="4" y1="32" x2="60" y2="32" stroke="#0B1C34" stroke-width="4" stroke-dasharray="6 4"/></svg>',
+        // 9. Centre Line
+        '<svg viewBox="0 0 64 64"><line x1="32" y1="4" x2="32" y2="60" stroke="#0B1C34" stroke-width="4"/><circle cx="32" cy="32" r="6" fill="#D71920"/></svg>',
+        // 10. Curling Pebble Texture Motif
+        '<svg viewBox="0 0 64 64"><circle cx="16" cy="20" r="4" fill="#0B1C34"/><circle cx="36" cy="14" r="5" fill="#B9D7ED"/><circle cx="48" cy="34" r="4" fill="#D71920"/><circle cx="24" cy="46" r="5" fill="#FFD83D"/></svg>',
+        // 11. Scoreboard / End Marker
+        '<svg viewBox="0 0 64 64"><rect x="10" y="14" width="44" height="36" rx="4" fill="#0B1C34"/><text x="32" y="38" fill="#FFD83D" font-size="22" font-weight="900" text-anchor="middle" font-family="sans-serif">8</text></svg>',
+        // 12. Skip / Throwing Position Silhouette
+        '<svg viewBox="0 0 64 64"><circle cx="20" cy="22" r="6" fill="#0B1C34"/><path d="M14 46 L24 32 L36 34 L48 44" fill="none" stroke="#0B1C34" stroke-width="4" stroke-linecap="round"/><ellipse cx="44" cy="48" rx="8" ry="4" fill="#FF2B30"/></svg>'
+      ];
 
-    getPuzzleForDay(dayIndex) {
-      if (this.puzzles.length === 0) return null;
-      const idx = dayIndex % this.puzzles.length;
-      return this.puzzles[idx];
-    }
+      // Exact Maple Leaf Geometry from Maple_Leaf_by_Merlin2525.svg (Item 13)
+      this.mapleLeafSvg = '<svg viewBox="0 0 298.72 341.12" style="color: #D71920;"><use href="#maple-leaf-symbol" /></svg>';
 
-    getTodayPuzzle() {
-      const dayIndex = this.getCurrentDayIndex();
-      return {
-        puzzle: this.getPuzzleForDay(dayIndex),
-        dayIndex
-      };
-    }
-
-    getReleasedVaultPuzzles() {
-      const currentDay = this.getCurrentDayIndex();
-      const vault = [];
-
-      for (let day = 0; day < currentDay; day++) {
-        const p = this.getPuzzleForDay(day);
-        if (p) {
-          vault.push({
-            puzzle: p,
-            dayIndex: day,
-            dateLabel: this.formatDateForDay(day)
-          });
-        }
+      if (this.supportsMotion && this.container) {
+        this.initLoop();
       }
-      return vault.reverse();
     }
 
-    formatDateForDay(dayIndex) {
-      const date = new Date(BASELINE_DATE_MS + dayIndex * MS_PER_DAY);
-      return date.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric"
-      });
+    createParticle() {
+      const el = document.createElement('div');
+      el.className = 'curling-floating-item';
+
+      // 40% chance of authoritative Canadian Maple Leaf, 60% one of the 12 curling icons
+      const isLeaf = Math.random() < 0.4;
+      if (isLeaf) {
+        el.innerHTML = this.mapleLeafSvg;
+      } else {
+        const iconIndex = Math.floor(Math.random() * this.curlingIconDefs.length);
+        el.innerHTML = this.curlingIconDefs[iconIndex];
+      }
+
+      // Assign Depth Level: Distant, Middle, Near (Section 14)
+      const depthRoll = Math.random();
+      let depthClass = 'depth-distant';
+      let speed = 0.35 + Math.random() * 0.4;
+      let size = 28 + Math.random() * 14;
+
+      if (depthRoll > 0.65) {
+        depthClass = 'depth-near';
+        speed = 0.75 + Math.random() * 0.6;
+        size = 46 + Math.random() * 18;
+      } else if (depthRoll > 0.3) {
+        depthClass = 'depth-mid';
+        speed = 0.5 + Math.random() * 0.45;
+        size = 36 + Math.random() * 14;
+      }
+
+      el.classList.add(depthClass);
+      el.style.width = `${size}px`;
+      el.style.height = `${size}px`;
+
+      const p = {
+        el,
+        x: Math.random() * (window.innerWidth - 60),
+        y: window.innerHeight + size + (Math.random() * 80),
+        speedY: speed,
+        driftX: (Math.random() - 0.5) * 0.4,
+        rot: Math.random() * 360,
+        rotSpeed: (Math.random() - 0.5) * 0.5,
+        size
+      };
+
+      this.container.appendChild(el);
+      return p;
+    }
+
+    initLoop() {
+      // Seed initial particles at staggered heights
+      for (let i = 0; i < this.maxParticles; i++) {
+        const p = this.createParticle();
+        p.y = Math.random() * window.innerHeight;
+        this.particles.push(p);
+      }
+
+      const step = () => {
+        if (!this.isRunning) return;
+
+        const h = window.innerHeight;
+        const w = window.innerWidth;
+
+        for (let i = 0; i < this.particles.length; i++) {
+          const p = this.particles[i];
+          p.y -= p.speedY;
+          p.x += p.driftX;
+          p.rot += p.rotSpeed;
+
+          // Recycle particle once it floats past the top
+          if (p.y < -p.size - 20) {
+            p.y = h + p.size + (Math.random() * 40);
+            p.x = Math.random() * (w - 60);
+          }
+
+          p.el.style.transform = `translate3d(${p.x}px, ${p.y}px, 0) rotate(${p.rot}deg)`;
+        }
+
+        requestAnimationFrame(step);
+      };
+
+      requestAnimationFrame(step);
     }
   }
 
   /* ==========================================================================
-     5. MAIN APP CONTROLLER
+     CORE APPLICATION: SPELLING BEE (Preserved Engine Logic)
      ========================================================================== */
   class SpellingBeeApp {
     constructor() {
-      this.sound = new SoundEngine();
-      this.storage = new StorageEngine();
-      this.scheduler = new Scheduler(window.SPELLING_BEE_PUZZLES || []);
-
-      // DOM Elements
-      this.screenMenu = document.getElementById("screen-menu");
-      this.screenGame = document.getElementById("screen-game");
-      this.wordDisplay = document.getElementById("current-word-display");
-      this.toastEl = document.getElementById("toast-message");
-
-      // Active Game State
+      this.puzzles = [];
+      this.dailyPuzzle = null;
       this.activePuzzle = null;
-      this.activeDayIndex = 0;
-      this.isVaultPuzzle = false;
-      this.currentWord = "";
-      this.outerLettersShuffled = [];
-      this.maxPossibleScore = 0;
-      this.toastTimer = null;
+      this.outerLetters = [];
+      this.inputWord = '';
+      this.foundWords = [];
+      this.score = 0;
+      this.maxScore = 0;
+      this.currentView = 'menu'; // 'menu' | 'game' | 'vault'
+      this.previousView = 'menu';
 
-      const canvas = document.getElementById("bg-canvas");
-      this.physics = new BackgroundPhysicsEngine(canvas, this.sound);
-
-      this.init();
-    }
-
-    init() {
-      this.initSoundSetting();
+      this.audio = new RinkAudio();
+      this.storage = this.loadSafeStorage();
+      this.cacheDom();
       this.bindEvents();
-      this.renderMenu();
-
-      setInterval(() => this.checkMidnightRollover(), 60000);
+      this.init();
+      this.initAtmosphere();
     }
 
-    initSoundSetting() {
-      this.sound.enabled = this.storage.state.soundEnabled !== false;
-      this.updateSoundButtonUI();
-    }
-
-    updateSoundButtonUI() {
-      const onIcon = document.getElementById("sound-icon-on");
-      const offIcon = document.getElementById("sound-icon-off");
-      const text = document.getElementById("sound-status-text");
-      if (this.sound.enabled) {
-        onIcon.classList.remove("hidden");
-        offIcon.classList.add("hidden");
-        text.textContent = "Sound: ON";
-      } else {
-        onIcon.classList.add("hidden");
-        offIcon.classList.remove("hidden");
-        text.textContent = "Sound: OFF";
+    initAtmosphere() {
+      const stage = document.getElementById('curlingParticlesStage');
+      if (stage) {
+        this.atmosphere = new RinkAtmosphere(stage);
       }
     }
 
-    toggleSound() {
-      this.sound.init();
-      this.sound.enabled = !this.sound.enabled;
-      this.storage.state.soundEnabled = this.sound.enabled;
-      this.storage.save();
-      this.updateSoundButtonUI();
-      if (this.sound.enabled) {
-        this.sound.playLetter();
-      }
+    cacheDom() {
+      this.dom = {
+        // Views
+        menuView: document.getElementById('menuView'),
+        gameView: document.getElementById('gameView'),
+        vaultView: document.getElementById('vaultView'),
+
+        // Main Menu Elements
+        menuDailyDate: document.getElementById('menuDailyDate'),
+        menuDailyStatus: document.getElementById('menuDailyStatus'),
+        menuDailyProgressFill: document.getElementById('menuDailyProgressFill'),
+        btnPlayDaily: document.getElementById('btnPlayDaily'),
+        cardDaily: document.getElementById('cardDaily'),
+        btnOpenVault: document.getElementById('btnOpenVault'),
+        cardVault: document.getElementById('cardVault'),
+        menuVaultCount: document.getElementById('menuVaultCount'),
+        linkHome: document.getElementById('linkHome'),
+        btnMenuRules: document.getElementById('btnMenuRules'),
+        btnMenuStats: document.getElementById('btnMenuStats'),
+
+        // Gameplay Elements
+        btnGameBack: document.getElementById('btnGameBack'),
+        gamePuzzleTitle: document.getElementById('gamePuzzleTitle'),
+        btnGameRules: document.getElementById('btnGameRules'),
+        btnGameStats: document.getElementById('btnGameStats'),
+        rankName: document.getElementById('rankName'),
+        currentScore: document.getElementById('currentScore'),
+        maxScore: document.getElementById('maxScore'),
+        rankFill: document.getElementById('rankFill'),
+        feedback: document.getElementById('feedback'),
+        inputDisplay: document.getElementById('inputDisplay'),
+        cellCenter: document.getElementById('cellCenter'),
+        outerCells: [
+          document.getElementById('cell-0'),
+          document.getElementById('cell-1'),
+          document.getElementById('cell-2'),
+          document.getElementById('cell-3'),
+          document.getElementById('cell-4'),
+          document.getElementById('cell-5')
+        ],
+        btnDelete: document.getElementById('btnDelete'),
+        btnShuffle: document.getElementById('btnShuffle'),
+        btnEnter: document.getElementById('btnEnter'),
+        foundToggle: document.getElementById('foundToggle'),
+        foundToggleIcon: document.getElementById('foundToggleIcon'),
+        foundListWrap: document.getElementById('foundListWrap'),
+        foundList: document.getElementById('foundList'),
+        foundCount: document.getElementById('foundCount'),
+
+        // Vault Elements
+        btnVaultBack: document.getElementById('btnVaultBack'),
+        vaultHeaderCount: document.getElementById('vaultHeaderCount'),
+        vaultGrid: document.getElementById('vaultGrid'),
+
+        // Modals
+        modalRules: document.getElementById('modalRules'),
+        modalStats: document.getElementById('modalStats'),
+        statPlayed: document.getElementById('statPlayed'),
+        statWords: document.getElementById('statWords'),
+        statPangrams: document.getElementById('statPangrams'),
+        statPoints: document.getElementById('statPoints'),
+        statCurrentStreak: document.getElementById('statCurrentStreak'),
+        statMaxStreak: document.getElementById('statMaxStreak')
+      };
     }
 
     bindEvents() {
-      document.getElementById("btn-sound-toggle").addEventListener("click", () => this.toggleSound());
-
-      document.getElementById("btn-play-today").addEventListener("click", () => {
-        this.sound.init();
-        this.sound.playLetter();
-        const { puzzle, dayIndex } = this.scheduler.getTodayPuzzle();
-        this.loadPuzzle(puzzle, dayIndex, false);
-        this.showScreen("game");
+      // Navigation: Main Menu Card Actions
+      this.dom.btnPlayDaily.addEventListener('click', () => {
+        this.audio.play('shuffle');
+        if (this.dailyPuzzle) {
+          this.loadPuzzle(this.dailyPuzzle);
+          this.switchView('game');
+        }
       });
 
-      document.getElementById("btn-game-back").addEventListener("click", () => {
-        this.sound.playLetter();
-        this.renderMenu();
-        this.showScreen("menu");
+      this.dom.btnOpenVault.addEventListener('click', () => {
+        this.audio.play('shuffle');
+        this.renderVault();
+        this.switchView('vault');
       });
 
-      this.bindModal("btn-open-vault", "modal-vault", "btn-close-vault", () => this.renderVault());
-      this.bindModal("btn-menu-stats", "modal-stats", "btn-close-stats", () => this.renderStats());
-      this.bindModal("btn-menu-help", "modal-help", "btn-close-help");
-      this.bindModal("btn-game-help", "modal-help", "btn-close-help");
-      this.bindModal("btn-game-words-toggle", "modal-words", "btn-close-words", () => this.renderFoundWordsModal());
+      // Navigation: Home Action
+      this.dom.linkHome.setAttribute('href', HOME_URL);
 
-      document.getElementById("cell-center").addEventListener("click", () => {
-        this.addLetter(this.activePuzzle.centerLetter);
+      // Back Buttons
+      this.dom.btnGameBack.addEventListener('click', () => {
+        this.audio.play('shuffle');
+        this.switchView(this.previousView === 'vault' ? 'vault' : 'menu');
       });
 
-      for (let i = 0; i < 6; i++) {
-        document.getElementById(`cell-${i}`).addEventListener("click", () => {
-          this.addLetter(this.outerLettersShuffled[i]);
+      this.dom.btnVaultBack.addEventListener('click', () => {
+        this.audio.play('shuffle');
+        this.switchView('menu');
+      });
+
+      // Modals
+      this.dom.btnMenuRules.addEventListener('click', () => {
+        this.audio.play('shuffle');
+        this.openModal(this.dom.modalRules);
+      });
+      this.dom.btnGameRules.addEventListener('click', () => {
+        this.audio.play('shuffle');
+        this.openModal(this.dom.modalRules);
+      });
+      this.dom.btnMenuStats.addEventListener('click', () => {
+        this.audio.play('shuffle');
+        this.renderStats();
+        this.openModal(this.dom.modalStats);
+      });
+      this.dom.btnGameStats.addEventListener('click', () => {
+        this.audio.play('shuffle');
+        this.renderStats();
+        this.openModal(this.dom.modalStats);
+      });
+
+      document.querySelectorAll('[data-close]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          this.audio.play('delete');
+          const id = btn.getAttribute('data-close');
+          const target = document.getElementById(id);
+          if (target) this.closeModal(target);
         });
-      }
+      });
 
-      document.getElementById("btn-action-delete").addEventListener("click", () => this.deleteLetter());
-      document.getElementById("btn-action-shuffle").addEventListener("click", () => this.shuffleOuterLetters());
-      document.getElementById("btn-action-enter").addEventListener("click", () => this.submitWord());
+      window.addEventListener('click', e => {
+        if (e.target.classList.contains('modal-backdrop')) {
+          this.closeModal(e.target);
+        }
+      });
 
-      window.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") {
-          this.closeAllModals();
+      // Found Words Accordion
+      this.dom.foundToggle.addEventListener('click', () => {
+        this.audio.play('shuffle');
+        const isHidden = this.dom.foundListWrap.hidden;
+        this.dom.foundListWrap.hidden = !isHidden;
+        this.dom.foundToggle.setAttribute('aria-expanded', String(isHidden));
+        this.dom.foundToggleIcon.textContent = isHidden ? '▲' : '▼';
+      });
+
+      // Hive Clicks
+      this.dom.cellCenter.addEventListener('click', () => {
+        if (this.activePuzzle) this.addLetter(this.activePuzzle.centerLetter);
+      });
+
+      this.dom.outerCells.forEach(cell => {
+        cell.addEventListener('click', () => {
+          const letter = cell.getAttribute('data-letter');
+          if (letter) this.addLetter(letter);
+        });
+      });
+
+      // Controls
+      this.dom.btnDelete.addEventListener('click', () => this.deleteLetter());
+      this.dom.btnShuffle.addEventListener('click', () => this.shuffleLetters());
+      this.dom.btnEnter.addEventListener('click', () => this.submitWord());
+
+      // Keyboard Controls
+      window.addEventListener('keydown', e => {
+        if (e.key === 'Escape') {
+          this.closeModal(this.dom.modalRules);
+          this.closeModal(this.dom.modalStats);
           return;
         }
 
-        if (!this.screenGame.classList.contains("active")) return;
+        if (this.currentView !== 'game' || !this.activePuzzle) return;
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
         if (e.ctrlKey || e.metaKey || e.altKey) return;
 
         const key = e.key.toUpperCase();
         if (/^[A-Z]$/.test(key)) {
           e.preventDefault();
           this.addLetter(key);
-        } else if (e.key === "Backspace") {
+        } else if (e.key === 'Backspace' || e.key === 'Delete') {
           e.preventDefault();
           this.deleteLetter();
-        } else if (e.key === "Enter") {
+        } else if (e.key === 'Enter') {
           e.preventDefault();
           this.submitWord();
-        } else if (e.key === " ") {
+        } else if (e.key === ' ' || e.key === '/') {
           e.preventDefault();
-          this.shuffleOuterLetters();
+          this.shuffleLetters();
         }
       });
     }
 
-    closeAllModals() {
-      document.querySelectorAll(".app-modal.active").forEach((modal) => {
-        modal.classList.remove("active");
-        modal.setAttribute("aria-hidden", "true");
-      });
-    }
-
-    bindModal(triggerId, modalId, closeId, onOpen) {
-      const trigger = document.getElementById(triggerId);
-      const modal = document.getElementById(modalId);
-      const close = document.getElementById(closeId);
-      const backdrop = modal.querySelector(".modal-backdrop");
-
-      const open = () => {
-        this.sound.init();
-        this.sound.playLetter();
-        if (onOpen) onOpen();
-        modal.classList.add("active");
-        modal.setAttribute("aria-hidden", "false");
-      };
-
-      const hide = () => {
-        this.sound.playLetter();
-        modal.classList.remove("active");
-        modal.setAttribute("aria-hidden", "true");
-      };
-
-      if (trigger) trigger.addEventListener("click", open);
-      if (close) close.addEventListener("click", hide);
-      if (backdrop) backdrop.addEventListener("click", hide);
-    }
-
-    showScreen(screenName) {
-      if (screenName === "game") {
-        this.screenMenu.classList.remove("active");
-        this.screenGame.classList.add("active");
-        this.physics.setGameMode(true);
-      } else {
-        this.screenGame.classList.remove("active");
-        this.screenMenu.classList.add("active");
-        this.physics.setGameMode(false);
+    async init() {
+      try {
+        const res = await fetch(CSV_PATH);
+        if (!res.ok) throw new Error('Network response not ok');
+        const text = await res.text();
+        const parsed = this.parseCSV(text);
+        this.puzzles = parsed.length > 0 ? parsed : FALLBACK_PUZZLES;
+      } catch (err) {
+        // Safe graceful fallback
+        this.puzzles = FALLBACK_PUZZLES;
       }
+
+      this.determineDailyPuzzle();
+      this.updateMenuDashboard();
     }
 
-    /* ==========================================================================
-       PUZZLE ENGINE & SCORING
-       ========================================================================== */
-    loadPuzzle(puzzle, dayIndex, isVault) {
-      if (!puzzle) return;
+    determineDailyPuzzle() {
+      const today = new Date().toISOString().slice(0, 10);
+      let match = this.puzzles.find(p => p.date === today);
+
+      if (!match) {
+        const past = this.puzzles.filter(p => p.date <= today);
+        match = past.length > 0 ? past[past.length - 1] : this.puzzles[0];
+      }
+      this.dailyPuzzle = match;
+    }
+
+    updateMenuDashboard() {
+      if (!this.dailyPuzzle) return;
+
+      this.dom.menuDailyDate.textContent = this.formatDate(this.dailyPuzzle.date);
+      const progress = this.storage.puzzles[this.dailyPuzzle.date] || { foundWords: [] };
+      const max = this.calculateMaxScore(this.dailyPuzzle);
+      const score = this.calculateWordsScore(progress.foundWords, this.dailyPuzzle);
+      const pct = max > 0 ? Math.min(100, Math.round((score / max) * 100)) : 0;
+
+      const rank = this.getRank(score, max);
+      this.dom.menuDailyStatus.textContent = `${rank.name} • ${progress.foundWords.length} words found (${score} pts)`;
+      this.dom.menuDailyProgressFill.style.width = `${pct}%`;
+
+      const vaultCount = Math.max(0, this.puzzles.length - 1);
+      this.dom.menuVaultCount.textContent = `${vaultCount} past draw${vaultCount === 1 ? '' : 's'}`;
+    }
+
+    switchView(targetView) {
+      this.previousView = this.currentView;
+      this.currentView = targetView;
+
+      this.dom.menuView.hidden = targetView !== 'menu';
+      this.dom.gameView.hidden = targetView !== 'game';
+      this.dom.vaultView.hidden = targetView !== 'vault';
+
+      if (targetView === 'menu') {
+        this.updateMenuDashboard();
+      }
+      window.scrollTo(0, 0);
+    }
+
+    parseCSV(text) {
+      const lines = text.trim().split(/\r?\n/).filter(line => line.trim().length > 0);
+      if (lines.length < 2) return [];
+
+      const puzzles = [];
+      for (let i = 1; i < lines.length; i++) {
+        const parts = lines[i].split(',');
+        if (parts.length < 4) continue;
+
+        const date = parts[0].trim();
+        const centerLetter = parts[1].trim().toUpperCase();
+        const outerLetters = parts[2].trim().toUpperCase().replace(/[^A-Z]/g, '').split('');
+        const words = parts.slice(3).join(',').replace(/["\r]/g, '').trim().toUpperCase().split(/\s+/).filter(Boolean);
+
+        puzzles.push({
+          date,
+          centerLetter,
+          outerLetters,
+          words,
+          pangrams: words.filter(w => {
+            const unique = new Set(w.split(''));
+            return unique.size >= 7 && [centerLetter, ...outerLetters].every(c => unique.has(c));
+          })
+        });
+      }
+      return puzzles;
+    }
+
+    loadPuzzle(puzzle) {
       this.activePuzzle = puzzle;
-      this.activeDayIndex = dayIndex;
-      this.isVaultPuzzle = isVault;
-      this.currentWord = "";
-      this.outerLettersShuffled = [...puzzle.outerLetters];
+      this.outerLetters = [...puzzle.outerLetters];
+      this.inputWord = '';
 
-      this.maxPossibleScore = puzzle.acceptedWords.reduce((acc, word) => {
-        return acc + this.getWordPoints(word);
-      }, 0);
+      const progress = this.storage.puzzles[puzzle.date] || { foundWords: [] };
+      this.foundWords = [...progress.foundWords];
+      this.maxScore = this.calculateMaxScore(puzzle);
+      this.score = this.calculateWordsScore(this.foundWords, puzzle);
 
-      const centerLetter = puzzle.centerLetter;
-      document.getElementById("center-char").textContent = centerLetter;
-      document.getElementById("cell-center").setAttribute("aria-label", `Center letter ${centerLetter}, mandatory`);
-      this.updateOuterLetterDisplays();
+      // Dedicated Header: Puzzle Title
+      const isDaily = this.dailyPuzzle && this.dailyPuzzle.date === puzzle.date;
+      this.dom.gamePuzzleTitle.textContent = isDaily 
+        ? `Daily Draw • ${this.formatDate(puzzle.date)}`
+        : `Vault Honeycomb • ${this.formatDate(puzzle.date)}`;
 
-      const activeLabel = document.getElementById("game-active-label");
-      const activeDate = document.getElementById("game-active-date");
-      activeLabel.textContent = isVault ? `Vault #${dayIndex}` : "Today";
-      activeDate.textContent = this.scheduler.formatDateForDay(dayIndex);
-
-      this.updateInputDisplay();
-      this.updateScoreAndRanks();
-      this.renderRankDots();
+      this.renderHive();
+      this.renderInput();
+      this.renderRank();
+      this.renderFoundList();
     }
 
-    updateOuterLetterDisplays() {
-      for (let i = 0; i < 6; i++) {
-        const letter = this.outerLettersShuffled[i];
-        const cell = document.getElementById(`cell-${i}`);
-        cell.querySelector(".letter-char").textContent = letter;
-        cell.setAttribute("aria-label", `Letter ${letter}`);
+    calculateWordScore(word, puzzle) {
+      const isPangram = puzzle.pangrams.includes(word);
+      const base = word.length === 4 ? 1 : word.length;
+      return base + (isPangram ? 7 : 0);
+    }
+
+    calculateMaxScore(puzzle) {
+      return puzzle.words.reduce((sum, w) => sum + this.calculateWordScore(w, puzzle), 0);
+    }
+
+    calculateWordsScore(words, puzzle) {
+      return words.reduce((sum, w) => sum + this.calculateWordScore(w, puzzle), 0);
+    }
+
+    renderHive() {
+      // Center letter
+      const centerLetterSpan = this.dom.cellCenter.querySelector('.hex-letter');
+      centerLetterSpan.textContent = this.activePuzzle.centerLetter;
+      this.dom.cellCenter.setAttribute('data-letter', this.activePuzzle.centerLetter);
+      this.dom.cellCenter.setAttribute('aria-label', `Center letter ${this.activePuzzle.centerLetter}`);
+
+      // Outer letters
+      this.dom.outerCells.forEach((cell, idx) => {
+        const letter = this.outerLetters[idx] || '';
+        const span = cell.querySelector('.hex-letter');
+        span.textContent = letter;
+        cell.setAttribute('data-letter', letter);
+        cell.setAttribute('aria-label', `Letter ${letter}`);
+      });
+    }
+
+    renderInput() {
+      this.dom.inputDisplay.innerHTML = '';
+      for (const ch of this.inputWord) {
+        const span = document.createElement('span');
+        span.textContent = ch;
+        if (ch === this.activePuzzle.centerLetter) span.classList.add('center-ch');
+        this.dom.inputDisplay.appendChild(span);
       }
+      const cursor = document.createElement('span');
+      cursor.className = 'cursor';
+      cursor.setAttribute('aria-hidden', 'true');
+      this.dom.inputDisplay.appendChild(cursor);
     }
 
-    shuffleOuterLetters() {
-      this.sound.playShuffle();
-      const grid = document.getElementById("honeycomb-grid");
-      grid.classList.add("shuffling");
-
-      setTimeout(() => {
-        for (let i = this.outerLettersShuffled.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [this.outerLettersShuffled[i], this.outerLettersShuffled[j]] = [this.outerLettersShuffled[j], this.outerLettersShuffled[i]];
-        }
-        this.updateOuterLetterDisplays();
-        grid.classList.remove("shuffling");
-      }, 120);
-    }
-
-    addLetter(char) {
-      if (this.currentWord.length >= 19) return;
-      this.sound.init();
-      this.sound.playLetter();
-      this.currentWord += char;
-      this.updateInputDisplay();
+    addLetter(letter) {
+      const valid = [this.activePuzzle.centerLetter, ...this.activePuzzle.outerLetters];
+      if (!valid.includes(letter)) {
+        this.audio.play('error');
+        this.showFeedback('Bad letter', 'error');
+        return;
+      }
+      if (this.inputWord.length >= 18) return;
+      this.audio.play('letter');
+      this.inputWord += letter;
+      this.renderInput();
     }
 
     deleteLetter() {
-      if (this.currentWord.length === 0) return;
-      this.sound.playLetter();
-      this.currentWord = this.currentWord.slice(0, -1);
-      this.updateInputDisplay();
+      if (!this.inputWord) return;
+      this.audio.play('delete');
+      this.inputWord = this.inputWord.slice(0, -1);
+      this.renderInput();
     }
 
-    updateInputDisplay() {
-      this.wordDisplay.innerHTML = "";
-      if (this.currentWord.length === 0) {
-        this.wordDisplay.innerHTML = '<span class="cursor" aria-hidden="true">|</span>';
-        return;
+    shuffleLetters() {
+      this.audio.play('shuffle');
+      for (let i = this.outerLetters.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [this.outerLetters[i], this.outerLetters[j]] = [this.outerLetters[j], this.outerLetters[i]];
       }
-
-      const center = this.activePuzzle.centerLetter;
-      for (const ch of this.currentWord) {
-        const span = document.createElement("span");
-        span.textContent = ch;
-        if (ch === center) {
-          span.classList.add("letter-center-match");
-        }
-        this.wordDisplay.appendChild(span);
-      }
-
-      const cursor = document.createElement("span");
-      cursor.className = "cursor";
-      cursor.textContent = "|";
-      cursor.setAttribute("aria-hidden", "true");
-      this.wordDisplay.appendChild(cursor);
-    }
-
-    getWordPoints(word) {
-      if (word.length === 4) return 1;
-      let pts = word.length;
-      if (this.isPangram(word)) {
-        pts += 7;
-      }
-      return pts;
-    }
-
-    isPangram(word) {
-      const set = new Set(word.split(""));
-      return set.size === 7;
+      this.renderHive();
     }
 
     submitWord() {
-      const word = this.currentWord.toUpperCase().trim();
+      const word = this.inputWord.trim().toUpperCase();
       if (!word) return;
 
-      const pState = this.storage.getPuzzleState(this.activePuzzle.id);
-
       if (word.length < 4) {
-        this.rejectWord("Too short");
+        this.audio.play('error');
+        this.showFeedback('Too short (min 4)', 'error');
         return;
       }
-
       if (!word.includes(this.activePuzzle.centerLetter)) {
-        this.rejectWord("Missing center letter");
+        this.audio.play('error');
+        this.showFeedback('Missing center letter', 'error');
+        return;
+      }
+      if (this.foundWords.includes(word)) {
+        this.audio.play('error');
+        this.showFeedback('Already found', 'error');
+        return;
+      }
+      if (!this.activePuzzle.words.includes(word)) {
+        this.audio.play('error');
+        this.showFeedback('Not in word list', 'error');
         return;
       }
 
-      if (pState.foundWords.includes(word)) {
-        this.rejectWord("Already found");
-        return;
-      }
+      const points = this.calculateWordScore(word, this.activePuzzle);
+      const isPangram = this.activePuzzle.pangrams.includes(word);
 
-      if (!this.activePuzzle.acceptedWords.includes(word)) {
-        this.rejectWord("Not in word list");
-        return;
-      }
+      this.foundWords.push(word);
+      this.score += points;
+      this.inputWord = '';
 
-      const isPangram = this.isPangram(word);
-      const points = this.getWordPoints(word);
+      this.saveProgress();
+      this.updateStats(points, isPangram);
 
-      pState.foundWords.push(word);
-      pState.score = (pState.score || 0) + points;
-
-      const isGenius = (pState.score / this.maxPossibleScore) >= 0.7;
-      this.storage.savePuzzleProgress(this.activePuzzle.id, pState.foundWords, pState.score, isGenius);
-      this.storage.recordWordFound(isPangram);
-
-      if (isGenius && !this.isVaultPuzzle) {
-        this.storage.recordDailyCompletion(this.activeDayIndex, true);
-      }
-
-      this.sound.playWordSuccess(isPangram);
       if (isPangram) {
-        this.showToast(`Pangram! +${points}`, true);
-      } else if (points >= 6) {
-        this.showToast(`Awesome! +${points}`);
+        this.audio.play('pangram');
       } else {
-        this.showToast(`Good! +${points}`);
+        this.audio.play('success');
       }
 
-      this.currentWord = "";
-      this.updateInputDisplay();
-      this.updateScoreAndRanks();
+      const msg = isPangram ? `Pangram! +${points}` : `+${points}`;
+      this.showFeedback(msg, isPangram ? 'pangram' : 'success');
+
+      this.renderInput();
+      this.renderRank();
+      this.renderFoundList();
     }
 
-    rejectWord(msg) {
-      this.sound.playError();
-      this.showToast(msg, false);
-      this.wordDisplay.classList.add("shake-input");
-      setTimeout(() => {
-        this.wordDisplay.classList.remove("shake-input");
-      }, 400);
-    }
-
-    showToast(message, isPangram = false) {
-      if (this.toastTimer) clearTimeout(this.toastTimer);
-      this.toastEl.textContent = message;
-      this.toastEl.className = "toast-popup show" + (isPangram ? " toast-pangram" : "");
-      this.toastTimer = setTimeout(() => {
-        this.toastEl.classList.remove("show");
-      }, 1600);
-    }
-
-    getRankForScore(score) {
-      const ratio = this.maxPossibleScore > 0 ? score / this.maxPossibleScore : 0;
-      let current = RANKS[0];
-      let next = RANKS[1];
-
-      for (let i = 0; i < RANKS.length; i++) {
-        if (ratio >= RANKS[i].pct) {
-          current = RANKS[i];
-          next = RANKS[i + 1] || null;
+    getRank(score, maxScore) {
+      const pct = maxScore > 0 ? score / maxScore : 0;
+      let currentRank = RANKS[0];
+      for (let i = RANKS.length - 1; i >= 0; i--) {
+        if (pct >= RANKS[i].pct) {
+          currentRank = RANKS[i];
+          break;
         }
       }
-      return { current, next, ratio };
+      return currentRank;
     }
 
-    updateScoreAndRanks() {
-      const pState = this.storage.getPuzzleState(this.activePuzzle.id);
-      const score = pState.score || 0;
-      const { current, next } = this.getRankForScore(score);
+    renderRank() {
+      const rank = this.getRank(this.score, this.maxScore);
+      const pct = this.maxScore > 0 ? Math.min(100, Math.round((this.score / this.maxScore) * 100)) : 0;
 
-      document.getElementById("current-score-label").textContent = score;
-      document.getElementById("current-rank-label").textContent = current.title;
+      this.dom.rankName.textContent = rank.name;
+      this.dom.currentScore.textContent = this.score;
+      this.dom.maxScore.textContent = this.maxScore;
+      this.dom.rankFill.style.width = `${pct}%`;
+    }
 
-      const count = pState.foundWords.length;
-      document.getElementById("game-words-counter").textContent = `${count} word${count === 1 ? "" : "s"}`;
+    renderFoundList() {
+      this.dom.foundCount.textContent = this.foundWords.length;
+      this.dom.foundList.innerHTML = '';
 
-      const pct = Math.min(100, Math.round((score / this.maxPossibleScore) * 100));
-      const fill = document.getElementById("progress-fill-bar");
-      fill.style.width = `${pct}%`;
-
-      const nextInfo = document.getElementById("next-rank-info");
-      if (next) {
-        const targetScore = Math.ceil(next.pct * this.maxPossibleScore);
-        const needed = Math.max(1, targetScore - score);
-        nextInfo.textContent = `${needed} pt${needed === 1 ? "" : "s"} to ${next.title}`;
-      } else {
-        nextInfo.textContent = "Button Master reached!";
+      if (this.foundWords.length === 0) {
+        const empty = document.createElement('p');
+        empty.className = 'empty-found-msg';
+        empty.textContent = 'No words found on the ice yet.';
+        this.dom.foundList.appendChild(empty);
+        return;
       }
 
-      this.renderRankDots();
-    }
-
-    renderRankDots() {
-      const pState = this.storage.getPuzzleState(this.activePuzzle.id);
-      const score = pState.score || 0;
-      const ratio = this.maxPossibleScore > 0 ? score / this.maxPossibleScore : 0;
-      const container = document.getElementById("rank-dots-container");
-      container.innerHTML = "";
-
-      RANKS.forEach((rank) => {
-        const dot = document.createElement("div");
-        dot.className = "rank-dot" + (ratio >= rank.pct ? " reached" : "");
-        container.appendChild(dot);
+      const sorted = [...this.foundWords].sort();
+      sorted.forEach(w => {
+        const item = document.createElement('span');
+        item.className = 'found-item';
+        if (this.activePuzzle.pangrams.includes(w)) {
+          item.classList.add('is-pangram');
+          item.setAttribute('title', 'Championship Pangram');
+        }
+        item.textContent = w;
+        this.dom.foundList.appendChild(item);
       });
     }
 
-    /* ==========================================================================
-       MENU & VAULT RENDERING
-       ========================================================================== */
-    renderMenu() {
-      const { puzzle, dayIndex } = this.scheduler.getTodayPuzzle();
-      if (!puzzle) return;
-
-      const pState = this.storage.getPuzzleState(puzzle.id);
-      const score = pState.score || 0;
-
-      const maxPts = puzzle.acceptedWords.reduce((acc, w) => acc + this.getWordPoints(w), 0);
-      const ratio = maxPts > 0 ? score / maxPts : 0;
-      let rankTitle = "Beginner";
-      for (const r of RANKS) {
-        if (ratio >= r.pct) rankTitle = r.title;
-      }
-
-      document.getElementById("menu-today-date").textContent = this.scheduler.formatDateForDay(dayIndex);
-      document.getElementById("mini-center-letter").textContent = puzzle.centerLetter;
-      document.getElementById("menu-rank-name").textContent = rankTitle;
-      document.getElementById("menu-score-display").textContent = `${score} pts`;
-
-      const orbit = document.getElementById("mini-letters-orbit");
-      orbit.innerHTML = "";
-      puzzle.outerLetters.forEach((letter) => {
-        const sp = document.createElement("span");
-        sp.textContent = letter;
-        orbit.appendChild(sp);
-      });
-
-      const btnPlayText = document.getElementById("btn-play-text");
-      if (score > 0) {
-        btnPlayText.textContent = "Continue Today's Game";
-      } else {
-        btnPlayText.textContent = "Play Today's Game";
-      }
-
-      const vaultPuzzles = this.scheduler.getReleasedVaultPuzzles();
-      document.getElementById("vault-count-badge").textContent = `${vaultPuzzles.length} Available`;
+    showFeedback(message, type) {
+      if (this.feedbackTimer) clearTimeout(this.feedbackTimer);
+      this.dom.feedback.textContent = message;
+      this.dom.feedback.className = `feedback ${type}`;
+      this.feedbackTimer = setTimeout(() => {
+        this.dom.feedback.textContent = '';
+        this.dom.feedback.className = 'feedback';
+      }, 1700);
     }
 
     renderVault() {
-      const container = document.getElementById("vault-items-container");
-      container.innerHTML = "";
-      const vaultItems = this.scheduler.getReleasedVaultPuzzles();
+      this.dom.vaultGrid.innerHTML = '';
+      
+      // Exclude current daily puzzle from historical vault
+      const vaultPuzzles = this.puzzles
+        .filter(p => !this.dailyPuzzle || p.date !== this.dailyPuzzle.date)
+        .sort((a, b) => b.date.localeCompare(a.date));
 
-      if (vaultItems.length === 0) {
-        container.innerHTML = `
-          <div style="text-align: center; padding: 24px; color: var(--text-secondary);">
-            <p style="font-weight: 750; font-size: 1rem; color: var(--ink-dark-deep);">The Vault opens tomorrow.</p>
-            <p style="font-size: 0.82rem; margin-top: 6px; color: var(--ink-dark-muted);">Day 0 is active. Previous puzzles appear here as they are released.</p>
-          </div>
-        `;
+      this.dom.vaultHeaderCount.textContent = vaultPuzzles.length;
+
+      if (vaultPuzzles.length === 0) {
+        const empty = document.createElement('p');
+        empty.className = 'empty-found-msg';
+        empty.textContent = 'No historical draws archived yet.';
+        this.dom.vaultGrid.appendChild(empty);
         return;
       }
 
-      vaultItems.forEach((item) => {
-        const pState = this.storage.getPuzzleState(item.puzzle.id);
-        const card = document.createElement("div");
-        card.className = "vault-item-card";
+      vaultPuzzles.forEach(puzzle => {
+        const card = document.createElement('div');
+        card.className = 'vault-card';
+        card.setAttribute('role', 'article');
+
+        const prog = this.storage.puzzles[puzzle.date] || { foundWords: [] };
+        const max = this.calculateMaxScore(puzzle);
+        const score = this.calculateWordsScore(prog.foundWords, puzzle);
+        const rank = this.getRank(score, max);
 
         card.innerHTML = `
-          <div class="vault-info-col">
-            <span class="vault-day-tag">Day ${item.dayIndex}</span>
-            <span class="vault-date-title">${item.dateLabel}</span>
+          <div class="vault-card-info">
+            <span class="vault-date">${this.formatDate(puzzle.date)}</span>
+            <span class="vault-letters">
+              <span class="center-ltr">${puzzle.centerLetter}</span> ${puzzle.outerLetters.join(' ')}
+            </span>
           </div>
-          <div class="vault-status-col">
-            <span class="vault-score-badge">${pState.score || 0} pts</span>
-            ${pState.completed ? '<span class="vault-completed-mark" title="Completed">★</span>' : ""}
+          <div class="vault-card-right">
+            <span class="vault-progress-tag ${rank.pct >= 0.85 ? 'completed' : ''}">
+              ${prog.foundWords.length}/${puzzle.words.length} • ${rank.name}
+            </span>
           </div>
         `;
 
-        card.addEventListener("click", () => {
-          this.sound.playLetter();
-          document.getElementById("modal-vault").classList.remove("active");
-          document.getElementById("modal-vault").setAttribute("aria-hidden", "true");
-          this.loadPuzzle(item.puzzle, item.dayIndex, true);
-          this.showScreen("game");
+        card.addEventListener('click', () => {
+          this.audio.play('shuffle');
+          this.loadPuzzle(puzzle);
+          this.switchView('game');
         });
 
-        container.appendChild(card);
-      });
-    }
-
-    renderFoundWordsModal() {
-      const pState = this.storage.getPuzzleState(this.activePuzzle.id);
-      const list = document.getElementById("found-words-list");
-      const sub = document.getElementById("words-modal-sub");
-      list.innerHTML = "";
-
-      const words = [...pState.foundWords].sort();
-      sub.textContent = `You have found ${words.length} word${words.length === 1 ? "" : "s"}`;
-
-      if (words.length === 0) {
-        list.innerHTML = '<li style="color: var(--text-muted); font-size: 0.85rem;">No words found yet. Start typing or tapping stones!</li>';
-        return;
-      }
-
-      words.forEach((w) => {
-        const li = document.createElement("li");
-        li.className = "word-chip" + (this.isPangram(w) ? " pangram" : "");
-        li.textContent = w;
-        list.appendChild(li);
+        this.dom.vaultGrid.appendChild(card);
       });
     }
 
     renderStats() {
-      const stats = this.storage.state.stats;
-      document.getElementById("stat-played").textContent = stats.played || 0;
-      document.getElementById("stat-genius").textContent = stats.geniusCount || 0;
-      document.getElementById("stat-streak").textContent = stats.currentStreak || 0;
-      document.getElementById("stat-best-streak").textContent = stats.bestStreak || 0;
-      document.getElementById("stat-total-words").textContent = stats.totalWords || 0;
-      document.getElementById("stat-total-pangrams").textContent = stats.totalPangrams || 0;
+      const s = this.storage.stats;
+      this.dom.statPlayed.textContent = s.played;
+      this.dom.statWords.textContent = s.words;
+      this.dom.statPangrams.textContent = s.pangrams;
+      this.dom.statPoints.textContent = s.points;
+      this.dom.statCurrentStreak.textContent = s.currentStreak;
+      this.dom.statMaxStreak.textContent = s.maxStreak;
     }
 
-    checkMidnightRollover() {
-      const currentDay = this.scheduler.getCurrentDayIndex();
-      if (!this.isVaultPuzzle && currentDay !== this.activeDayIndex) {
-        if (this.screenMenu.classList.contains("active")) {
-          this.renderMenu();
+    openModal(modal) {
+      if (modal) modal.hidden = false;
+    }
+
+    closeModal(modal) {
+      if (modal) modal.hidden = true;
+    }
+
+    formatDate(dateStr) {
+      if (!dateStr) return '';
+      const [y, m, d] = dateStr.split('-');
+      const date = new Date(Date.UTC(+y, +m - 1, +d));
+      return date.toLocaleDateString('en-US', { timeZone: 'UTC', month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
+    loadSafeStorage() {
+      const fallback = {
+        version: 2,
+        stats: {
+          played: 0,
+          words: 0,
+          pangrams: 0,
+          points: 0,
+          currentStreak: 0,
+          maxStreak: 0,
+          lastDate: null
+        },
+        puzzles: {}
+      };
+
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return fallback;
+        const parsed = JSON.parse(raw);
+        return {
+          ...fallback,
+          ...parsed,
+          stats: { ...fallback.stats, ...(parsed.stats || {}) },
+          puzzles: parsed.puzzles || {}
+        };
+      } catch (e) {
+        return fallback;
+      }
+    }
+
+    saveProgress() {
+      if (!this.activePuzzle) return;
+      this.storage.puzzles[this.activePuzzle.date] = {
+        foundWords: this.foundWords,
+        score: this.score
+      };
+      this.persist();
+    }
+
+    updateStats(pts, isPangram) {
+      const stats = this.storage.stats;
+      const today = new Date().toISOString().slice(0, 10);
+
+      stats.words += 1;
+      stats.points += pts;
+      if (isPangram) stats.pangrams += 1;
+
+      if (stats.lastDate !== today) {
+        if (!stats.lastDate) {
+          stats.currentStreak = 1;
+        } else {
+          const diff = Math.round((new Date(today) - new Date(stats.lastDate)) / 86400000);
+          stats.currentStreak = diff === 1 ? stats.currentStreak + 1 : 1;
         }
+        stats.lastDate = today;
+        stats.played += 1;
+        if (stats.currentStreak > stats.maxStreak) stats.maxStreak = stats.currentStreak;
+      }
+      this.persist();
+    }
+
+    persist() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(this.storage));
+      } catch (e) {
+        // Storage limit protection
       }
     }
   }
 
-  // Application Entry Point
-  window.addEventListener("DOMContentLoaded", () => {
+  document.addEventListener('DOMContentLoaded', () => {
     new SpellingBeeApp();
   });
 })();
